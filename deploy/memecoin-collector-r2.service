@@ -1,0 +1,43 @@
+[Unit]
+Description=MemeCoin observation-only data collector
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=memecoin-collector
+Group=memecoin-collector
+WorkingDirectory=/opt/memecoin-collector-r2
+EnvironmentFile=/etc/memecoin-collector/collector.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/memecoin-collector-r2/.venv/bin/python -m operations.service --directory /var/lib/memecoin-collector/campaign-r2 --until 2026-10-16T01:06:00+00:00
+Restart=on-failure
+RestartSec=20
+KillMode=mixed
+TimeoutStopSec=35
+StateDirectory=memecoin-collector
+StateDirectoryMode=0750
+UMask=0077
+CPUQuota=50%
+Nice=10
+MemoryHigh=384M
+MemoryMax=512M
+TasksMax=32
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

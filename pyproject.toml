@@ -1,0 +1,10 @@
+[project]
+name = "memecoin-paper-bot"
+version = "0.1.0"
+description = "Solana market collector and paper-trading research bot"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"

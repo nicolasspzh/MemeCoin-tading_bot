@@ -1,0 +1,33 @@
+[Unit]
+Description=Telegram notifications for virtual MemeCoin Paper trades
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=memecoin-paper
+Group=memecoin-paper
+WorkingDirectory=/opt/memecoin-paper
+# Reuse the already paired private bot; systemd reads this root-only file.
+EnvironmentFile=/etc/memecoin-collector/telegram.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/memecoin-paper/.venv/bin/python -m operations.paper_notify --directory /var/lib/memecoin-paper/run --state /var/lib/memecoin-paper-notifier/state.json --send
+TimeoutStartSec=180
+StateDirectory=memecoin-paper-notifier
+StateDirectoryMode=0700
+UMask=0077
+MemoryMax=256M
+CPUQuota=25%
+Nice=15
+TasksMax=16
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/memecoin-paper
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=

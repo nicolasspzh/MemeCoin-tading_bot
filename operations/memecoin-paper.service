@@ -1,0 +1,41 @@
+[Unit]
+Description=MemeCoin independent paper trading (virtual funds only)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=memecoin-paper
+Group=memecoin-paper
+WorkingDirectory=/opt/memecoin-paper
+EnvironmentFile=-/etc/memecoin-paper/paper.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/memecoin-paper/.venv/bin/python -m operations.paper_service run --directory /var/lib/memecoin-paper/run
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=20
+KillMode=control-group
+StateDirectory=memecoin-paper
+StateDirectoryMode=0700
+UMask=0077
+MemoryHigh=384M
+MemoryMax=512M
+CPUQuota=25%
+Nice=15
+TasksMax=32
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
