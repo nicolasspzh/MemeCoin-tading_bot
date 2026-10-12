@@ -1,0 +1,33 @@
+[Unit]
+Description=MemeCoin Telegram status notification
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=memecoin-collector
+Group=memecoin-collector
+WorkingDirectory=/opt/memecoin-collector-r2
+EnvironmentFile=/etc/memecoin-collector/telegram.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/memecoin-collector-r2/.venv/bin/python -m deploy.telegram_notify
+TimeoutStartSec=60
+StateDirectory=memecoin-notifier
+StateDirectoryMode=0700
+UMask=0077
+MemoryMax=256M
+CPUQuota=25%
+Nice=15
+TasksMax=16
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# campaign.status opens the existing lock for locking, without changing bytes.
+ReadWritePaths=-/var/lib/memecoin-collector/campaign-r2/supervisor.lock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=

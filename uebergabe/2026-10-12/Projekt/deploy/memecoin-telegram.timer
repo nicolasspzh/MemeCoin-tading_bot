@@ -1,0 +1,11 @@
+[Unit]
+Description=Check MemeCoin status every five minutes for Telegram
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=15s
+Unit=memecoin-telegram.service
+
+[Install]
+WantedBy=timers.target

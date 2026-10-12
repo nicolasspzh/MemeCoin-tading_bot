@@ -4,6 +4,16 @@ Solana-Marktdaten sammeln, Risiken prüfen und Handelsregeln mit **virtuellen
 50 USD** untersuchen. Ausschließlich Paper Trading; keine Wallet-Schlüssel,
 Transaktionssignierung oder echten Orders. Profitabilität ist nicht nachgewiesen.
 
+## Übergabe an Claude – 12. Oktober 2026
+
+Das vollständige entpackte Übergabepaket liegt unter
+[`uebergabe/2026-10-12/`](uebergabe/2026-10-12/).
+**Zuerst den [Startauftrag](uebergabe/2026-10-12/START-FUER-CLAUDE.md), dann die
+[vollständige Übergabe](uebergabe/2026-10-12/UEBERGABE.md) lesen.**
+Die [Leseanleitung](uebergabe/README.md) erklärt aktuelle Quellen, eingefrorene
+Referenzdaten und historische Pakete. Die enthaltene Entwicklungsdatenbank ist
+keine Kopie der aktuell laufenden VPS-Sammlung.
+
 ## Aktueller Stand – 10. Oktober 2026
 
 **[Projektstand und nächste Schritte](docs/PROJEKTSTAND.md)**
@@ -17,8 +27,10 @@ Transaktionssignierung oder echten Orders. Profitabilität ist nicht nachgewiese
   noch abschließend zu bewerten. Das Qualitätsflag ist weiterhin gesetzt.
 
 Dieses Repository enthält Code, Tests, Dienstvorlagen, Anleitungen und
-künstliche Vorschauen. Es enthält keine API-Schlüssel, Telegram-Zugangsdaten,
-laufenden Datenbanken, Logs oder privaten Server-Backups. Ein GitHub-Upload
+künstliche Vorschauen sowie seit dem 12. Oktober das ausdrücklich freigegebene
+Übergabepaket mit eingefrorener R2-Entwicklungsreferenz und historischen Paketen.
+Es enthält keine API-Schlüssel, Telegram-Zugangsdaten,
+laufenden Datenbanken, Logs oder aktuellen Server-Backups. Ein GitHub-Upload
 aktualisiert den VPS nicht. Die laufende Installation unverändert lassen.
 
 ## Lokal ausprobieren – ohne Anbieterzugänge
@@ -85,7 +97,9 @@ Für eine spätere bewusst eingerichtete Marktdatensammlung erklärt
 gehören in eine ignorierte `.env` oder sichere Umgebungsvariablen.
 Auf dem bereits eingerichteten VPS sind diese separat gespeichert.
 
-Die eingefrorenen R2-Daten und das vollständige Protokoll sind nicht Bestandteil
-dieses Klons. Lokale Demo und Tests benötigen sie nicht. Historische Paketbauer
-und Auswertungen mit diesem Protokoll benötigen die separat aufbewahrte Evidenz;
-keine neuen Daten als Ersatz unter einem alten Protokoll ausgeben.
+Die eingefrorene R2-Entwicklungsreferenz und das vollständige Protokoll liegen
+seit der Übergabe unter `uebergabe/2026-10-12/R2-Referenz/`. Lokale Demo und Tests
+benötigen sie nicht. Historische Paketbauer erwarten weiterhin ihre ursprünglichen
+`runtime/`-Pfade und sind kein aktueller Installationsweg. Für Auswertungen
+die Originalreferenz ausdrücklich zuordnen; keine neuen Daten als Ersatz
+unter einem alten Protokoll ausgeben.

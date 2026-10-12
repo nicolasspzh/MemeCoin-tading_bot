@@ -1,0 +1,16 @@
+{
+  "handover_date": "2026-10-12",
+  "timezone": "Europe/Zurich",
+  "latest_user_supplied_vps_status": "2026-10-10T16:23:16+02:00",
+  "github_commit": "73fa133e3903628b568532a049253572f61e5297",
+  "github_files_exactly_matched": 103,
+  "tests_last_verified_at_source_preparation": "337 passed in 20.32s; not rerun for documentation-only handover",
+  "r2_protocol_fingerprint_verified": "a3069969150f38ea8739e55f929b5fffcd819867bee6dbf238ccf9f0e44396f9",
+  "r2_core_fingerprint_verified": "8dcc53e9b17e18bfa1d5c2ac10facbd0bc1cc8b75dea61064c55589f29a5b9bd",
+  "development_database_integrity": "ok",
+  "credential_scan": "no configured credential matches or high-confidence token/private-key patterns",
+  "archive_contains_live_vps_database": false,
+  "server_access_performed": false,
+  "market_evaluation_performed": false,
+  "original_source_modified": false
+}

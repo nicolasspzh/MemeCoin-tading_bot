@@ -1,0 +1,22 @@
+ÜBERGABE AN CLAUDE – 12. OKTOBER 2026
+
+1. UEBERGABE.md enthält den vollständigen Arbeitskontext.
+2. START-FUER-CLAUDE.md enthält den Text für den neuen Chat.
+3. Projekt enthält den vollständigen bestätigten GitHub-Quellstand.
+4. R2-Referenz enthält originales Testprotokoll und Entwicklungsdaten.
+   Das sind NICHT die gerade auf deinem VPS gesammelten Daten.
+5. Historische-Pakete dient nur der Nachvollziehbarkeit. Nichts installieren!
+
+Entpacke das ZIP auf deinem Computer. Lade UEBERGABE.md bei Claude hoch und
+kopiere den Startauftrag in den Chat. Gib Claude zusätzlich Zugriff auf den
+Projektordner oder das GitHub-Repo. Wenn deine Claude-Oberfläche ZIP-Dateien
+unterstützt, kannst du auch das vollständige Paket hochladen; andernfalls
+arbeite mit den entpackten Dateien, dem Repo oder Claude Code.
+
+Keine Zugangsdaten enthalten. Die Übergabe nennt jedoch die bekannte VPS-IP
+und Betriebsdetails; das Paket nicht automatisch öffentlich veröffentlichen.
+Die aktuelle VPS-Datenbank ist nur auf dem Server und nicht enthalten.
+Letzter bestätigter Serverstatus: 10. Oktober. Aktuellen Status neu abfragen.
+
+Die Codebasis bleibt unverändert. Der Datensammler wird nicht neu gestartet.
+SHA256SUMS enthält Prüfsummen aller anderen Dateien im Ordner.
