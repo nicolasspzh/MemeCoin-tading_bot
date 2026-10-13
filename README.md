@@ -14,13 +14,15 @@ Die [Leseanleitung](uebergabe/README.md) erklärt aktuelle Quellen, eingefrorene
 Referenzdaten und historische Pakete. Die enthaltene Entwicklungsdatenbank ist
 keine Kopie der aktuell laufenden VPS-Sammlung.
 
-## Aktueller Stand – 10. Oktober 2026
+## Aktueller Stand am 13. Oktober 2026
 
 **[Projektstand und nächste Schritte](docs/PROJEKTSTAND.md)**
 
 - Auf dem Debian-VPS läuft die R2-Datensammlung mit Telegram-Berichten.
-- Letzte übermittelte Messung: 63'773 Beobachtungen zu 232 Coins; 98,4 % mit Kurs.
+- Letzte übermittelte Messung vom 12. Oktober: 129'194 Beobachtungen zu 467 Coins;
+  98,4 % mit Kurs. Installierter Code per Prüfsumme als unverändert bestätigt.
 - Geplantes Ende: **16. Oktober 2026, 03:06 Uhr Schweizer Zeit**.
+  Danach: **[Anleitung für Sicherung und Auswertung](docs/NACH-R2-ENDE.md)**.
 - Eigenständiger Paper-Dienst, Paper-Telegram und Auswertungsbericht sind lokal
   vorbereitet. Neue Anti-FOMO-/Risikogrößen-Regeln sind isolierte Testvarianten.
 - **337 Tests**; Datenqualität und Profitabilität der laufenden Sammlung sind
@@ -64,6 +66,7 @@ keine Trades und berechnet keine Rendite.
 | Thema | Dokument |
 | --- | --- |
 | Was läuft, was fehlt, Zeitfenster | [Projektstand](docs/PROJEKTSTAND.md) |
+| Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
 | Fortschritt auf dem bereits eingerichteten VPS | [Statusbefehl](docs/PROJEKTSTAND.md#auf-dem-vps-bestätigt) |
 | Bestehende Telegram-Anbindung des Sammlers | [Telegram](deploy/TELEGRAM.md) |
 | Phase 7 und technische Betriebsprobe | [Phase 7](operations/PHASE7.md) |
