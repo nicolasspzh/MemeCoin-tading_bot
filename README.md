@@ -67,6 +67,7 @@ keine Trades und berechnet keine Rendite.
 | --- | --- |
 | Was läuft, was fehlt, Zeitfenster | [Projektstand](docs/PROJEKTSTAND.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
+| Recherche und Ideen für die nächste Version | [Recherche](docs/RECHERCHE-2026-10-13.md) |
 | Fortschritt auf dem bereits eingerichteten VPS | [Statusbefehl](docs/PROJEKTSTAND.md#auf-dem-vps-bestätigt) |
 | Bestehende Telegram-Anbindung des Sammlers | [Telegram](deploy/TELEGRAM.md) |
 | Phase 7 und technische Betriebsprobe | [Phase 7](operations/PHASE7.md) |

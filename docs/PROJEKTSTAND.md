@@ -110,6 +110,10 @@ Prüfsummen während der laufenden Sammlung nicht ändern.
 5. Neue Einstiegsvarianten getrennt integrieren und vorab festgelegt testen.
    Daten, an denen Parameter ausgewählt wurden, gelten danach als Entwicklung,
    nicht als unabhängiger Bestätigungstest.
+6. Ideen aus der [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md) prüfen,
+   vor allem realistische Gebühren je Pool (PumpSwap bis 1,25 % pro Trade statt
+   der modellierten 0,3 %) und eine frühe Sperre fremder Gegenwährungen.
+   Erst nach der R2-Auswertung und mit neuem Protokoll.
 
 `REVIEWABLE_HOLDOUT` bedeutet prüfbare Evidenz, keine automatische Handelsfreigabe.
 Wallet-Schlüssel, Signierung und echte Orderausführung sind nicht implementiert.
