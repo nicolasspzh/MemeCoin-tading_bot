@@ -230,7 +230,10 @@ Inhalt von pruefung.json: <INHALT>
 2. Die Datei aus Google Drive mit `curl` herunterladen. Bei grossen Dateien
    verlangt Google manchmal eine Bestätigung. Dafür ist der Download über
    `https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t`
-   vorgesehen. Dieser Weg ist noch nicht mit der echten Datei getestet.
+   vorgesehen. Test am 13. Oktober mit einer 300-MB-Zufallsdatei: Download ohne
+   Anmeldung und ohne Bestätigungsseite, rund 62 MB/s, vollständige Grösse,
+   SHA-256 identisch mit der Prüfsumme auf dem PC. Mit der echten Datei ist
+   der Weg noch nicht getestet.
 3. `sha256sum` der Datei mit `sha256` aus `pruefung.json` vergleichen. Bei
    Abweichung abbrechen.
 4. Prüfen, dass keine Zugangsdaten enthalten sind:
