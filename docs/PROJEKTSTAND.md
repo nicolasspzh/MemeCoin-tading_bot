@@ -102,9 +102,9 @@ Prüfsummen während der laufenden Sammlung nicht ändern.
 2. Nach dem Ende genau nach [NACH-R2-ENDE.md](NACH-R2-ENDE.md) vorgehen:
    Ende prüfen, geprüfte finale Kopie erstellen, auf den PC holen und extern
    aufbewahren. GitHub enthält diese Daten nicht.
-3. Mit dem passenden unveränderten R2-Protokoll auswerten, auf dem PC und nicht
-   auf dem VPS, weil die Auswertung voraussichtlich mehrere GB Arbeitsspeicher
-   braucht: Datenabdeckung, Nettoergebnisse nach Kosten, offene Positionen und Verluste.
+3. Mit dem passenden unveränderten R2-Protokoll auswerten, in einer
+   Claude-Code-Cloud-Sitzung oder auf dem PC, nicht auf VPS oder NAS, weil die
+   Auswertung voraussichtlich mehrere GB Arbeitsspeicher braucht: Datenabdeckung, Nettoergebnisse nach Kosten, offene Positionen und Verluste.
 4. Über einen begrenzten Paper-Betrieb mit echten Marktdaten entscheiden und
    dessen Installation/Telegram/Last auf dem VPS gesondert prüfen.
 5. Neue Einstiegsvarianten getrennt integrieren und vorab festgelegt testen.

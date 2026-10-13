@@ -1,6 +1,6 @@
 # Nach dem R2-Ende: Sicherung und Auswertung
 
-Stand: 13. Oktober 2026. Diese Anleitung gilt **erst nach dem 16. Oktober 2026,
+Stand: 13. Oktober 2026, ergänzt um die Cloud-Variante. Diese Anleitung gilt **erst nach dem 16. Oktober 2026,
 03:06 Uhr Schweizer Zeit**. Vorher keinen dieser Schritte ausführen, ausser
 dem freiwilligen Schritt 0.
 
@@ -15,9 +15,14 @@ Alle Befehle lesen die Sammlung nur oder schreiben in **neue** Ordner.
 | 1 | SSH-Konsole des VPS | Prüfen, dass der Sammler regulär beendet ist |
 | 2 | SSH-Konsole des VPS | Geprüfte finale Kopie in einen neuen Ordner schreiben |
 | 3 | Windows-PowerShell | Kopie auf den PC holen und Prüfsumme vergleichen |
-| 4 | Windows | Zweite Kopie ausserhalb von PC und VPS ablegen |
-| 5 | Ubuntu (WSL) auf dem PC | Auswertung mit dem eingefrorenen R2-Protokoll |
+| 4 | Windows, NAS | Zweite Kopie ausserhalb von PC und VPS ablegen |
+| 5A | Browser und Claude Code (empfohlen) | Datei über Google Drive an Claude geben, Claude wertet in der Cloud aus |
+| 5B | Ubuntu (WSL) auf dem PC (Alternative) | Auswertung selbst auf dem PC |
 | 6 | Browser auf dem PC | Bericht öffnen und gemeinsam prüfen |
+
+Für 5A muss auf dem PC nichts installiert werden. 5B braucht eine einmalige
+Einrichtung von Ubuntu unter Windows. Beide Wege verwenden denselben
+eingefrorenen Code und dasselbe Protokoll.
 
 "SSH-Konsole" heisst: in Windows-PowerShell zuerst `ssh root@159.195.4.228`
 eingeben, Passwort eintippen (es bleibt unsichtbar), danach die Befehle eingeben.
@@ -158,33 +163,112 @@ zeigt ihn in Grossbuchstaben, das ist kein Unterschied. Weicht er ab, die
 
 ## Schritt 4: Zweite Kopie ausserhalb von PC und VPS
 
-Den ganzen Ordner `r2-final-20261016` zusätzlich auf einen USB-Stick oder in
-einen eigenen Cloud-Speicher kopieren. Die Sicherungen auf dem VPS liegen auf
+Den ganzen Ordner `r2-final-20261016` zusätzlich auf das NAS, einen USB-Stick
+oder in einen eigenen Cloud-Speicher kopieren. Die Sicherungen auf dem VPS liegen auf
 derselben Festplatte wie die Originale und schützen nicht vor einem Ausfall
 des ganzen Servers.
 
 Auf dem VPS **nichts löschen**: weder die Sammlung noch die Sicherungen noch
 den neuen Ordner. Aufräumen besprechen wir erst nach der Auswertung.
 
-## Schritt 5: Auswertung auf dem PC
+## Schritt 5: Auswertung
 
-### Warum nicht auf dem VPS
+### Warum nicht auf dem VPS oder dem NAS
 
 Die Auswertung lädt alle Beobachtungen gleichzeitig in den Arbeitsspeicher
 (`backtesting/replay.py`). Messung am 13. Oktober mit der eingefrorenen
 Entwicklungsreferenz: 3'937 Beobachtungen brauchten rund 110 MB zusätzlich.
 Linear hochgerechnet auf voraussichtlich etwa 240'000 R2-Beobachtungen sind
 das **grob 6 bis 7 GB**. Das ist eine Hochrechnung, keine Messung mit R2-Daten.
-Der VPS hat 3,8 GiB und betreibt zusätzlich Velincoin. Ein Speichermangel
-könnte dort auch Velincoin treffen.
+
+- VPS: 3,8 GiB Arbeitsspeicher. Laut Übergabe lief dort zusätzlich Velincoin;
+  der Betreiber meldete am 13. Oktober, dass nur noch der Sammler läuft. Der
+  Arbeitsspeicher reicht trotzdem nicht.
+- NAS (Synology DS224+): 2 GB Arbeitsspeicher, reicht ebenfalls nicht.
 
 Den Auswertungscode zu ändern ist keine Lösung: Er gehört zum eingefrorenen
 Kern. Jede Änderung würde den Fingerprint brechen, und das R2-Protokoll liesse
 sich nicht mehr verwenden.
 
-### Einmalig: Ubuntu unter Windows (WSL) einrichten
+### 5A: Auswertung durch Claude in der Cloud (empfohlen)
+
+Eine Claude-Code-Sitzung in der Cloud hat 15 GB Arbeitsspeicher und 30 GB
+freien Platz (geprüft am 13. Oktober). Ein Testdownload über HTTPS lief mit
+etwa 23 MB/s. Auf dem PC muss dafür nichts installiert werden.
+
+**1. Datei in Google Drive hochladen, im Browser auf dem PC**
+
+- `drive.google.com` öffnen, "Neu", dann "Datei hochladen".
+- `Downloads\r2-final-20261016\observations-final.sqlite3` wählen. Bei etwa
+  2 GB dauert das je nach Internetverbindung einige Minuten.
+
+**2. Freigeben**
+
+- Rechtsklick auf die hochgeladene Datei, "Teilen" bzw. "Freigeben".
+- Unter "Allgemeiner Zugriff" auf "Jeder, der über den Link verfügt" stellen,
+  Rolle "Betrachter". Die genauen Bezeichnungen können je nach Google-Version
+  leicht abweichen.
+- "Link kopieren".
+
+**3. Claude den Link geben**
+
+Den Link zusammen mit dem Inhalt von `pruefung.json` an Claude schicken. Gibt
+es die bisherige Sitzung nicht mehr, eine neue Claude-Code-Sitzung mit diesem
+Repository starten und Folgendes einfügen:
+
+```
+Lies docs/NACH-R2-ENDE.md, Abschnitt 5A, und führe die Auswertung von R2 aus.
+Link zur Datei: <LINK>
+Inhalt von pruefung.json: <INHALT>
+Ändere keinen Code. Schicke mir bericht.html und result.json.
+```
+
+**4. Was Claude dabei macht**
+
+1. Python-Umgebung aus `requirements.txt` einrichten, falls nötig, und
+   `python -m pytest -q` ausführen. Erwartet: `337 passed`.
+2. Die Datei aus Google Drive mit `curl` herunterladen. Bei grossen Dateien
+   verlangt Google manchmal eine Bestätigung. Dafür ist der Download über
+   `https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t`
+   vorgesehen. Dieser Weg ist noch nicht mit der echten Datei getestet.
+3. `sha256sum` der Datei mit `sha256` aus `pruefung.json` vergleichen. Bei
+   Abweichung abbrechen.
+4. Prüfen, dass keine Zugangsdaten enthalten sind:
+   `grep -a -c 'api-key=' observations-final.sqlite3` muss `0` ergeben.
+   Der Hostname `mainnet.helius-rpc.com` darf vorkommen; der Code speichert
+   ihn als Herkunft von Risikobelegen, aber ohne Schlüssel.
+5. Datei nach `runtime/r2/` legen (von Git ausgeschlossen). Auswertung und
+   Bericht mit genau diesen Befehlen, im Repository-Ordner:
+
+   ```bash
+   python -m backtesting.evaluation evaluate \
+     --protocol uebergabe/2026-10-12/R2-Referenz/protocol.json \
+     --db runtime/r2/observations-final.sqlite3 \
+     --out runtime/r2/auswertung
+   python -m operations.evaluation_report \
+     --result runtime/r2/auswertung/result.json \
+     --out runtime/r2/auswertung/bericht.html
+   ```
+
+6. `bericht.html` und `result.json` an den Benutzer schicken. Die Daten und
+   Ergebnisse werden **nicht** ins Git-Repository übernommen.
+
+**5. Freigabe zurücknehmen**
+
+Sobald Claude den Download bestätigt, in Google Drive unter "Allgemeiner
+Zugriff" wieder "Eingeschränkt" einstellen. Die Datei enthält keine
+Zugangsdaten, sollte aber nicht dauerhaft öffentlich abrufbar sein.
+
+**Wenn 5A nicht klappt:** Scheitert der Download aus Google Drive, kann ein
+Freigabelink vom NAS (File Station) dienen, sofern das NAS von aussen über
+HTTPS erreichbar ist. Sonst bleibt 5B.
+
+### 5B: Auswertung selbst auf dem PC (Alternative)
+
+#### Einmalig: Ubuntu unter Windows (WSL) einrichten
 
 Die Projektwerkzeuge laufen unter Linux. WSL stellt Linux unter Windows bereit.
+Der PC hat 32 GB Arbeitsspeicher; WSL erhält davon nur einen Teil.
 
 **Windows-PowerShell, als Administrator geöffnet:**
 
@@ -196,7 +280,7 @@ Danach den PC neu starten. Beim ersten Start von "Ubuntu" einen
 Linux-Benutzernamen und ein Passwort festlegen. Das ist ein eigenes Passwort
 nur für Ubuntu auf dem PC, nicht das VPS-Passwort.
 
-### Projekt und Umgebung vorbereiten
+#### Projekt und Umgebung vorbereiten
 
 **Ubuntu-Konsole (WSL):**
 
@@ -215,12 +299,12 @@ python -m pytest -q
 Prüfen:
 
 - Bei `free -h` in der Zeile `Mem:` die Spalte `available`. Für die Auswertung
-  sollten **mindestens 8 GB** frei sein. WSL erhält nur einen Teil des
-  PC-Arbeitsspeichers. Ist es weniger, hier stoppen und Claude fragen.
+  sollten **mindestens 8 GB** frei sein. Ist es weniger, hier stoppen und
+  Claude fragen.
 - `python3 --version` muss 3.12 oder neuer zeigen.
 - Die Tests müssen mit `337 passed` enden. Sonst nicht weitermachen.
 
-### Daten in Ubuntu kopieren und prüfen
+#### Daten in Ubuntu kopieren und prüfen
 
 **Ubuntu-Konsole (WSL)**, im Ordner `MemeCoin-tading_bot`:
 
@@ -232,7 +316,7 @@ sha256sum ~/r2/observations-final.sqlite3
 
 Die Prüfsumme muss wieder dem Wert aus `pruefung.json` entsprechen.
 
-### Auswertung starten
+#### Auswertung starten
 
 **Ubuntu-Konsole (WSL)**, im Ordner `MemeCoin-tading_bot`, mit aktivierter
 Umgebung (`source .venv/bin/activate`):
@@ -248,11 +332,11 @@ python -m operations.evaluation_report \
 cp ~/r2/auswertung/bericht.html /mnt/c/Users/nicol/Downloads/
 ```
 
-Was dabei passiert und was normal ist:
+### Für 5A und 5B: was normal ist
 
 - Das Programm prüft zuerst, dass Code und Protokoll zusammenpassen
   (Fingerprint `8dcc53e9…`). Meldet es `Evaluation failed: ValueError`, nicht
-  selbst etwas ändern, sondern Claude die Ausgabe schicken.
+  selbst etwas ändern.
 - Die Laufzeit liegt voraussichtlich bei einigen Minuten, vielleicht länger.
 - Die erste Ausgabezeile zeigt `status` und `blockers`. **Exitcode 2 und der
   Status `INSUFFICIENT_EVIDENCE` sind ein reguläres Ergebnis**, kein Absturz.
@@ -263,12 +347,10 @@ Was dabei passiert und was normal ist:
 
 ## Schritt 6: Bericht ansehen und prüfen
 
-`bericht.html` in `Downloads` mit Doppelklick im Browser öffnen. Er zeigt den
-Status, alle sechs Läufe (baseline und stress, je drei Seeds), offene
-Anforderungen, Kosten und offene Positionen.
-
-Bitte Claude schicken: die erste Ausgabezeile der Auswertung und den Bericht
-oder `~/r2/auswertung/result.json`. Dann prüfen wir gemeinsam.
+`bericht.html` mit Doppelklick im Browser öffnen. Bei 5A schickt Claude die
+Datei, bei 5B liegt sie in `Downloads`. Der Bericht zeigt den Status, alle
+sechs Läufe (baseline und stress, je drei Seeds), offene Anforderungen,
+Kosten und offene Positionen. Danach prüfen wir das Ergebnis gemeinsam.
 
 Was der Bericht **nicht** bedeutet:
 
