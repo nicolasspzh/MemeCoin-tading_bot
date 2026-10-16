@@ -85,8 +85,18 @@ def trade_liquidity_usd(snapshot: Snapshot) -> Decimal | None:
     return min(values) if values else None
 
 
-def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry: bool = True) -> list[str]:
+def complete_check(snapshot: Snapshot) -> bool:
+    """An error-free on-chain check with a verified pool for exactly this token and pool."""
+    risk = snapshot.mint_risk
+    holders = _complete_holders(snapshot)
+    return (risk is not None and not risk.data_errors and holders is not None
+            and holders.token == snapshot.token and holders.pair == snapshot.pair)
+
+
+def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry: bool = True,
+                 check_max_age_seconds: int | None = None) -> list[str]:
     reasons = []
+    check_age = settings.max_quote_age_seconds if check_max_age_seconds is None else check_max_age_seconds
     age = (now - snapshot.received_at).total_seconds()
     if age < 0 or age > settings.max_quote_age_seconds:
         reasons.append("stale_or_future_quote")
@@ -101,7 +111,7 @@ def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry
         check_times = [risk.checked_at, *[t for t in (risk.mint_checked_at, risk.concentration_checked_at) if t is not None]]
         if risk.holder_risk is not None:
             check_times.append(risk.holder_risk.checked_at)
-        if any(not 0 <= (now - t).total_seconds() <= settings.max_quote_age_seconds for t in check_times):
+        if any(not 0 <= (now - t).total_seconds() <= check_age for t in check_times):
             reasons.append("stale_or_future_onchain_checks")
         if not risk.supported_program:
             reasons.append("unsupported_token_program")

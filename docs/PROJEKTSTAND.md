@@ -130,9 +130,9 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
    realistische Kosten je Pool.
    Stand 16.10.: Stufen A bis C erledigt (Code mit Tests, Diagnose in
    [R3-STUFE-C-DIAGNOSE.md](R3-STUFE-C-DIAGNOSE.md)).
-4. Offenen Befund aus Stufe C entscheiden (blockierte Verkäufe bei fehlender
-   Prüfung), Probelauf des Sammlers mit Vorfilter (Stufe D), dann ein neues
-   Protokoll mit zukünftigem Testfenster festlegen.
+4. Blockierte Verkäufe aus Stufe C sind behoben (Rückgriff auf die letzte
+   vollständige Prüfung). Als Nächstes: Probelauf des Sammlers mit Vorfilter
+   (Stufe D), dann ein neues Protokoll mit zukünftigem Testfenster festlegen.
 5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
    entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
 

@@ -15,7 +15,7 @@ from pathlib import Path
 from config.settings import Settings
 from data.models import Snapshot, Wallet
 from trading.execution import Execution, attempt, failure_draw, valuation_settings
-from trading.paper_wallet import equity, mark
+from trading.paper_wallet import equity, mark, note_check
 from trading.risk import trade_liquidity_usd
 from trading.strategy import decide
 
@@ -234,6 +234,7 @@ class Replay:
                 self.quotes[(snapshot.token, snapshot.pair)] = snapshot
                 mark(self.wallet, snapshot, self.valuation_settings())
             else:
+                note_check(self.wallet, snapshot, self.valuation_settings())
                 order = self.pending.get(snapshot.token)
                 if (order and order["pair"] == snapshot.pair
                         and snapshot.received_at > datetime.fromisoformat(order["signal_at"])

@@ -8,7 +8,7 @@ from config.settings import Settings
 from data.database import Database
 from data.models import Decision, Snapshot, Wallet, utcnow
 from trading.execution import Execution, attempt, book_value, failure_draw, ledger_entry, valuation_settings
-from trading.paper_wallet import equity, mark
+from trading.paper_wallet import equity, mark, note_check
 from trading.risk import trade_liquidity_usd
 from trading.strategy import decide
 
@@ -96,6 +96,8 @@ class Engine:
             sid = self.db.add_snapshot(snapshot)
             if 0 <= (now - snapshot.received_at).total_seconds() <= self.settings.max_quote_age_seconds:
                 mark(wallet, snapshot, valuation_settings(self.settings, self.execution))
+            if now >= snapshot.received_at:
+                note_check(wallet, snapshot, valuation_settings(self.settings, self.execution))
             self._expire(wallet, now)
             pending = next((o for o in self.db.pending_orders() if o["token"] == snapshot.token), None)
             decision = None

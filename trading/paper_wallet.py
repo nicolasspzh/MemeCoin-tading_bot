@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from config.settings import Settings
 from data.models import Fill, Position, Snapshot, Wallet
-from trading.risk import pool_fee_bps, trade_liquidity_usd
+from trading.risk import complete_check, pool_fee_bps, trade_liquidity_usd
 
 D = Decimal
 
@@ -30,12 +30,25 @@ def mark(wallet: Wallet, snapshot: Snapshot, settings: Settings):
     if p and p.pair == snapshot.pair and snapshot.price_usd is not None:
         p.last_price = snapshot.price_usd
         p.peak_price = max(p.peak_price, snapshot.price_usd)
-        fee = pool_fee_bps(snapshot, settings)
-        if fee is not None:
-            p.exit_fee_bps = fee  # PumpSwap fees change with market cap
     # DEAD is latched. Open positions may still exit, but no further entries.
     if equity(wallet, settings) < 5:
         wallet.dead = True
+
+
+def note_check(wallet: Wallet, snapshot: Snapshot, settings: Settings):
+    """Record pool facts for an open position once its on-chain check is available.
+
+    Called at feature availability, not at quote receipt, so a replay never uses
+    a check before it existed.
+    """
+    p = wallet.positions.get(snapshot.token)
+    if not p or p.pair != snapshot.pair:
+        return
+    fee = pool_fee_bps(snapshot, settings)
+    if fee is not None:
+        p.exit_fee_bps = fee  # PumpSwap fees change with market cap
+    if complete_check(snapshot):
+        p.exit_check = snapshot.mint_risk
 
 
 def allocate_profit(wallet: Wallet, profit: Decimal, pre_profit_capital: Decimal):
@@ -88,7 +101,8 @@ def buy(wallet: Wallet, snapshot: Snapshot, sid: int, now: datetime, settings: S
     wallet.positions[snapshot.token] = Position(
         token=snapshot.token, pair=snapshot.pair, quantity=quantity, entry_cost=budget,
         entry_price=price, opened_at=now, entry_snapshot_id=sid,
-        peak_price=snapshot.price_usd, last_price=snapshot.price_usd, exit_fee_bps=settings.fee_bps)
+        peak_price=snapshot.price_usd, last_price=snapshot.price_usd, exit_fee_bps=settings.fee_bps,
+        exit_check=snapshot.mint_risk if complete_check(snapshot) else None)
     return Fill(side="BUY", token=snapshot.token, pair=snapshot.pair, snapshot_id=sid,
                 quantity=quantity, price=price, fee=fee, cash_flow=-budget,
                 signal_at=now, simulated_at=now, entry_snapshot_id=sid)

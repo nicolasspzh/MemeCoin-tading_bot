@@ -11,6 +11,10 @@ from data.models import Fill, Snapshot, Wallet
 from trading.paper_wallet import CannotFill, buy, equity, sell
 from trading.risk import pool_fee_bps, risk_reasons, trade_liquidity_usd
 
+# A failed, missing or outdated check is a data gap, not evidence against the pool.
+CHECK_GAPS = {"missing_onchain_checks", "stale_or_future_onchain_checks", "incomplete_onchain_checks",
+              "missing_verified_holder_risk"}
+
 
 class Execution(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False, extra="forbid")
@@ -36,8 +40,9 @@ def failure_draw(order: dict, execution: Execution) -> D:
     return D(int.from_bytes(hashlib.sha256(key.encode()).digest(), "big")) / D(2**256)
 
 
-def execution_blockers(snapshot: Snapshot, now: datetime, settings: Settings, side: str) -> list[str]:
-    reasons = risk_reasons(snapshot, now, settings, entry=side == "BUY")
+def execution_blockers(snapshot: Snapshot, now: datetime, settings: Settings, side: str,
+                       check_max_age_seconds: int | None = None) -> list[str]:
+    reasons = risk_reasons(snapshot, now, settings, entry=side == "BUY", check_max_age_seconds=check_max_age_seconds)
     if side == "BUY":
         return reasons
     # Concentration, LP/creator balances and falling liquidity can cause an exit.
@@ -65,10 +70,27 @@ class Attempt:
     impact_bps: D = D(0)
 
 
+def exit_view(snapshot: Snapshot, wallet: Wallet, now: datetime, settings: Settings) -> tuple[Snapshot, int | None]:
+    """Quote for an exit, with the position's last complete pool check if only check data is missing.
+
+    A check that ran and found a problem is never replaced. The fallback check may
+    be up to max_exit_check_age_seconds old; quote, price and DEX liquidity stay current.
+    """
+    position = wallet.positions.get(snapshot.token)
+    blockers = set(execution_blockers(snapshot, now, settings, "SELL"))
+    if (position is None or position.exit_check is None or position.pair != snapshot.pair
+            or not blockers & CHECK_GAPS or not blockers <= CHECK_GAPS):
+        return snapshot, None
+    return snapshot.model_copy(update={"mint_risk": position.exit_check}), settings.max_exit_check_age_seconds
+
+
 def attempt(wallet: Wallet, order: dict, snapshot: Snapshot, sid: int, now: datetime,
             settings: Settings, execution: Execution, draw: D) -> Attempt:
     candidate = wallet.model_copy(deep=True)
     side = order["action"]
+    check_age = None
+    if side == "SELL":
+        snapshot, check_age = exit_view(snapshot, candidate, now, settings)
     notional = (D(order["budget_usd"]) if side == "BUY" else
                 candidate.positions[snapshot.token].quantity * (snapshot.price_usd or 0)
                 if snapshot.token in candidate.positions else D(0))
@@ -88,7 +110,7 @@ def attempt(wallet: Wallet, order: dict, snapshot: Snapshot, sid: int, now: date
         # ensures a rejected or failed attempt cannot partially book a fill.
         fill = (buy(candidate, snapshot, sid, now, fill_settings, budget_usd=D(order["budget_usd"]))
                 if side == "BUY" else sell(candidate, snapshot, sid, now, fill_settings))
-        blockers = execution_blockers(snapshot, now, settings, side)
+        blockers = execution_blockers(snapshot, now, settings, side, check_age)
         if blockers:
             raise CannotFill("execution_risk:" + ",".join(blockers))
     except CannotFill as exc:

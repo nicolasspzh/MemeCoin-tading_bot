@@ -56,6 +56,8 @@ class Settings(BaseModel):
     position_fraction: Decimal = Field(default=Decimal("0.05"), gt=0, le=Decimal("0.10"))
     max_positions: int = Field(default=3, ge=1, le=10)
     max_quote_age_seconds: int = Field(default=120, ge=1)
+    # An exit may use the last complete pool check up to this age when the current one is missing.
+    max_exit_check_age_seconds: int = Field(default=900, ge=0, le=3600)
     min_age_seconds: int = Field(default=60, ge=0)
     min_pumpswap_age_seconds: int = Field(default=600, ge=0)
     max_age_seconds: int = Field(default=86400, ge=60)

@@ -246,9 +246,13 @@ Erweiterungen fremder Gegenwährungen.
 bestehen mit dem R3-Code 2'753 Beobachtungen von 41 Coins alle
 Einstiegsprüfungen (R2: 0), alle auf PumpSwap. Die sechs Replays erzeugen je
 82 bis 84 Orders und 29 bis 34 geschlossene Trades auf 12 bis 13 Coins. Die
-Sperrgründe sind nachvollziehbar. Offener Befund zur Mechanik: Verkäufe
-werden abgelehnt, wenn zum Ausführungszeitpunkt die On-Chain-Prüfung fehlt.
-Das muss vor dem R3-Protokoll entschieden werden.
+Sperrgründe sind nachvollziehbar. Befund zur Mechanik: Verkäufe wurden
+abgelehnt, wenn zum Ausführungszeitpunkt die On-Chain-Prüfung fehlte. Behoben
+mit Variante a: Ein Verkauf darf auf die letzte vollständige Prüfung
+desselben Pools zurückgreifen, höchstens 900 Sekunden alt
+(`max_exit_check_age_seconds`). Danach wird kein Verkauf mehr abgelehnt.
+Offen für das Protokoll: ob Verkäufe eine grössere Kursbewegung als 3 %
+zulassen sollen.
 
 ## Ablauf und Erfolgsbedingungen
 

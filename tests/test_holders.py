@@ -199,6 +199,76 @@ def test_measured_pool_fee_is_charged_instead_of_fixed_assumption(bundle, quote)
     assert outcome.wallet.positions[s.token].exit_fee_bps == Decimal(100)
 
 
+def open_position(bundle, quote):
+    from trading.execution import Execution, attempt
+    from data.models import Wallet
+    s = risk_snapshot(quote, bundle, assess(bundle))
+    order = {"id": 1, "token": s.token, "action": "BUY", "budget_usd": "2", "signal_price_usd": str(s.price_usd),
+             "signal_at": s.received_at.isoformat(), "signal_snapshot_id": 1}
+    outcome = attempt(Wallet(), order, s, 1, s.received_at, Settings(), Execution(failure_probability=0), Decimal(1))
+    assert outcome.status == "filled" and outcome.wallet.positions[s.token].exit_check == s.mint_risk
+    return outcome.wallet, s
+
+
+def sell_later(wallet, s, seconds, risk):
+    from datetime import timedelta
+    from trading.execution import Execution, attempt
+    later = s.model_copy(update={"received_at": s.received_at + timedelta(seconds=seconds), "mint_risk": risk})
+    order = {"id": 2, "token": s.token, "action": "SELL", "budget_usd": "0", "signal_price_usd": str(s.price_usd),
+             "signal_at": later.received_at.isoformat(), "signal_snapshot_id": 2}
+    return attempt(wallet, order, later, 2, later.received_at, Settings(), Execution(failure_probability=0), Decimal(1))
+
+
+def failed_check(s, seconds):
+    from datetime import timedelta
+    return MintRisk(checked_at=s.received_at + timedelta(seconds=seconds), supported_program=True,
+                    mint_authority=False, freeze_authority=False, risk_version=3, data_errors=["holder check failed"])
+
+
+def test_exit_uses_last_complete_pool_check_when_current_check_failed(bundle, quote):
+    wallet, s = open_position(bundle, quote)
+    outcome = sell_later(wallet, s, 300, failed_check(s, 300))
+    assert outcome.status == "filled"
+    fee_bps = Decimal(s.mint_risk.holder_risk.pool_details["known_fee_bps"])
+    gross = outcome.fill.quantity * outcome.fill.price
+    assert outcome.fill.fee == gross * fee_bps / 10000 + Settings().fixed_fee_usd + Decimal("0.005")
+    wallet.positions[s.token].exit_check = None
+    assert sell_later(wallet, s, 300, failed_check(s, 300)).reason == \
+        "execution_risk:incomplete_onchain_checks,missing_verified_holder_risk"
+
+
+def test_exit_fallback_check_has_an_age_limit(bundle, quote):
+    wallet, s = open_position(bundle, quote)
+    outcome = sell_later(wallet, s, Settings().max_exit_check_age_seconds + 1,
+                         failed_check(s, Settings().max_exit_check_age_seconds + 1))
+    assert outcome.status == "rejected" and "stale_or_future_onchain_checks" in outcome.reason
+
+
+def test_completed_check_with_a_finding_is_never_replaced(bundle, quote):
+    wallet, s = open_position(bundle, quote)
+    from datetime import timedelta
+    holders = s.mint_risk.holder_risk.model_copy(update={"checked_at": s.received_at + timedelta(seconds=60)})
+    found = s.mint_risk.model_copy(update={"checked_at": holders.checked_at, "freeze_authority": True,
+                                           "holder_risk": holders})
+    outcome = sell_later(wallet, s, 60, found)
+    assert outcome.status == "rejected" and "freeze_authority_active_or_unknown" in outcome.reason
+
+
+def test_position_keeps_only_complete_checks_of_its_own_pool(bundle, quote):
+    from trading.paper_wallet import note_check
+    wallet, s = open_position(bundle, quote)
+    first = wallet.positions[s.token].exit_check
+    note_check(wallet, s.model_copy(update={"mint_risk": failed_check(s, 30)}), Settings())
+    assert wallet.positions[s.token].exit_check == first
+    other = s.model_copy(update={"pair": key(111)})
+    note_check(wallet, other, Settings())
+    assert wallet.positions[s.token].exit_check == first
+    from datetime import timedelta
+    newer = s.mint_risk.model_copy(update={"checked_at": s.received_at + timedelta(seconds=60)})
+    note_check(wallet, s.model_copy(update={"mint_risk": newer}), Settings())
+    assert wallet.positions[s.token].exit_check == newer
+
+
 def test_fees_cannot_be_mistaken_for_spendable_pool_reserves(bundle):
     raw = bytearray(base64.b64decode(bundle["accounts"][bundle["pair"]]["data"][0]))
     struct.pack_into("<Q", raw, 341, 800)

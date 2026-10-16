@@ -162,12 +162,20 @@ derselbe Grund verhindert dann die Ausführung.
 
 Auswirkung in Baseline, Seed 7: Vom ersten Verkaufssignal bis zum
 ausgeführten Verkauf vergingen im Median 20 Sekunden. In 3 von 34 Fällen
-waren es über 120 Sekunden, im längsten Fall 429 Sekunden. Die längste
-Haltedauer lag bei 956 Sekunden, also über dem Zeitstopp von 900 Sekunden.
+waren es über 120 Sekunden, im längsten Fall 429 Sekunden. Die beiden
+längsten Verzögerungen (429 und 354 Sekunden) betrafen Positionen, die so
+939 und 945 Sekunden offen blieben.
+
+Korrektur: In meinem ersten Bericht habe ich die längste Haltedauer von
+956 Sekunden als Folge der blockierten Verkäufe dargestellt. Das stimmt
+nicht. Bei dieser Position kam das Zeitstopp-Signal erst nach 925 Sekunden,
+weil die nächste Beobachtung so spät eintraf, und der Verkauf folgte
+31 Sekunden später. Haltedauern knapp über 900 Sekunden entstehen also auch
+ohne blockierte Verkäufe.
 
 Das ist kein Gewinnthema, sondern eine Frage der Sicherheit: Ein Bot, der
 wegen einer fehlenden Datenabfrage nicht verkaufen kann, bleibt in einem
-fallenden Coin stecken. Mögliche Lösungen, noch nicht umgesetzt:
+fallenden Coin stecken. Mögliche Lösungen:
 
 - Für den Verkauf die letzte vollständige Prüfung desselben Pools verwenden,
   wenn sie nicht zu alt ist.
@@ -175,7 +183,70 @@ fallenden Coin stecken. Mögliche Lösungen, noch nicht umgesetzt:
   Token-Mechanik (Freeze Authority, Token-2022-Erweiterungen) weiter sperren.
   Die Gebühr würde dann mit dem Höchstwert `max_pool_fee_bps` angesetzt.
 
-Die Entscheidung gehört vor das R3-Protokoll (Stufe E).
+Entschieden am 16.10.: Variante a (erste Lösung). Umsetzung und Wirkung im
+nächsten Abschnitt.
+
+## Nachtrag: Variante a umgesetzt
+
+Code-Fingerprint danach: `5e72b7c4…`.
+
+Regel: Jede offene Position merkt sich die letzte vollständige Prüfung ihres
+Pools (`Position.exit_check`). Vollständig heisst: keine Datenfehler und eine
+geprüfte Pool- und Halteranalyse für genau diesen Coin und Pool. Fehlt beim
+Verkauf die aktuelle Prüfung, ist sie unvollständig oder zu alt, verwendet
+der Verkauf diese gemerkte Prüfung. Sie darf höchstens
+`max_exit_check_age_seconds` alt sein, Standard 900 Sekunden. Kurs und
+DEX-Liquidität bleiben aktuell. Als Liquidität zählt wie bisher der kleinere
+Wert aus DEX Screener und Pool.
+
+Nie ersetzt wird eine Prüfung, die gelaufen ist und ein Problem gefunden hat
+(zum Beispiel eine aktive Freeze Authority oder eine zu hohe Gebühr). Der
+Rückgriff gilt nur, wenn alle Sperrgründe reine Datenlücken sind:
+`missing_onchain_checks`, `stale_or_future_onchain_checks`,
+`incomplete_onchain_checks`, `missing_verified_holder_risk`.
+
+Warum 900 Sekunden: Das ist die geplante maximale Haltedauer. So reicht die
+Prüfung vom Einstieg für die ganze geplante Haltedauer. Der Wert ist eine
+Entwurfsentscheidung und nicht auf diese Daten abgestimmt.
+
+Nebenbei behoben: Die Replay-Simulation hat die gemessene Poolgebühr einer
+offenen Position schon beim Eintreffen des Kurses übernommen, also einige
+Sekunden bevor die zugehörige Prüfung fertig war. Das war ein kleiner Blick
+in die Zukunft, den ich in Stufe B eingebaut hatte. Gebühr und gemerkte
+Prüfung werden jetzt erst übernommen, wenn die Prüfung vorliegt
+(`note_check`).
+
+Tests: 4 neue Tests in `tests/test_holders.py` (Rückgriff, Altersgrenze,
+gefundenes Problem bleibt Sperre, nur vollständige Prüfungen desselben Pools
+werden gemerkt). Ohne den Rückgriff scheitern zwei davon, das habe ich
+geprüft. 378 Tests bestehen. Den Weg über den Live-Paper-Dienst
+(`trading/engine.py`) deckt kein eigener neuer Test ab. Er nutzt dieselben
+Funktionen.
+
+Wirkung auf den R2-Daten (gleiche Beobachtungen, gleiche Einstellungen):
+
+| Szenario | Seed | Orders | ausgeführt | abgelehnt | fehlgeschlagen | geschlossene Trades | Coins | längste Verzögerung bis Verkauf |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| baseline | 7 | 74 | 68 | 2 | 4 | 34 | 13 | 90 s |
+| baseline | 17 | 78 | 70 | 2 | 6 | 35 | 13 | 133 s |
+| baseline | 29 | 79 | 70 | 2 | 7 | 35 | 13 | 133 s |
+| stress | 7 | 80 | 62 | 3 | 15 | 31 | 13 | 133 s |
+| stress | 17 | 81 | 62 | 3 | 16 | 31 | 12 | 253 s |
+| stress | 29 | 79 | 64 | 2 | 13 | 32 | 13 | 133 s |
+
+Kein Verkauf wird mehr abgelehnt. Die restlichen Ablehnungen sind Käufe, bei
+denen die Prüfung fehlte. Das ist gewollt: Ein Einstieg braucht immer eine
+frische, vollständige Prüfung.
+
+Neu sichtbar: Verkäufe scheitern jetzt häufiger mit
+`price_moved_beyond_limit` (3 bis 8 pro Lauf). Der Kurs ist dann zwischen
+Signal und Ausführung um mehr als 3 % gefallen. Der Verkauf wird beim
+nächsten Signal neu versucht. Daher kommen die verbleibenden Verzögerungen
+von über 120 Sekunden. Ob ein Verkauf eine grössere Kursbewegung zulassen
+soll als ein Kauf, ist eine eigene Frage für das R3-Protokoll.
+
+Gewinn und Verlust ändern sich nur wenig (baseline −9,97 bis −10,78 USD,
+stress −13,24 bis −14,94 USD). Wie oben gilt: kein Kriterium.
 
 ## Grenzen
 
