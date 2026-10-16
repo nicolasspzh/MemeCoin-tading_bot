@@ -241,6 +241,15 @@ Erweiterungen fremder Gegenwährungen.
 
 **Stufe B ist damit bis auf den Sandwich-Aufschlag abgeschlossen.**
 
+**Stufe C ist abgeschlossen (16.10.).** Details in
+[`R3-STUFE-C-DIAGNOSE.md`](R3-STUFE-C-DIAGNOSE.md). Kurz: Auf den R2-Daten
+bestehen mit dem R3-Code 2'753 Beobachtungen von 41 Coins alle
+Einstiegsprüfungen (R2: 0), alle auf PumpSwap. Die sechs Replays erzeugen je
+82 bis 84 Orders und 29 bis 34 geschlossene Trades auf 12 bis 13 Coins. Die
+Sperrgründe sind nachvollziehbar. Offener Befund zur Mechanik: Verkäufe
+werden abgelehnt, wenn zum Ausführungszeitpunkt die On-Chain-Prüfung fehlt.
+Das muss vor dem R3-Protokoll entschieden werden.
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |

@@ -128,7 +128,10 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
    [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md): Vorfilter bei der
    Aufnahme, PumpSwap mit Gebührenstaffel, neue Konzentrationsmessung,
    realistische Kosten je Pool.
-4. Änderungen mit Tests und auf den Entwicklungsdaten prüfen, dann ein neues
+   Stand 16.10.: Stufen A bis C erledigt (Code mit Tests, Diagnose in
+   [R3-STUFE-C-DIAGNOSE.md](R3-STUFE-C-DIAGNOSE.md)).
+4. Offenen Befund aus Stufe C entscheiden (blockierte Verkäufe bei fehlender
+   Prüfung), Probelauf des Sammlers mit Vorfilter (Stufe D), dann ein neues
    Protokoll mit zukünftigem Testfenster festlegen.
 5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
    entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
