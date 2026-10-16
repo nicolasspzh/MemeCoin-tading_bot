@@ -123,7 +123,7 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
 1. Externe Kopien der finalen Datenbank bestätigen (PC und NAS), erst danach
    über Aufräumen auf dem VPS entscheiden.
 2. VPS absichern: SSH-Anmeldung auf Schlüssel umstellen.
-3. R3 entwerfen, auf Basis der Entwicklungsanalyse in
+3. R3 nach dem [R3-Plan](R3-PLAN.md) umsetzen, auf Basis der Entwicklungsanalyse in
    [R2-ERGEBNIS.md](R2-ERGEBNIS.md) und der
    [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md): Vorfilter bei der
    Aufnahme, PumpSwap mit Gebührenstaffel, neue Konzentrationsmessung,

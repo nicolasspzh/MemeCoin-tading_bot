@@ -65,6 +65,7 @@ keine Trades und berechnet keine Rendite.
 | --- | --- |
 | Was läuft, was fehlt, Zeitfenster | [Projektstand](docs/PROJEKTSTAND.md) |
 | Ergebnis und Analyse von R2 | [R2-Ergebnis](docs/R2-ERGEBNIS.md) |
+| Plan für die nächste Version | [R3-Plan](docs/R3-PLAN.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
 | Recherche und Ideen für die nächste Version | [Recherche](docs/RECHERCHE-2026-10-13.md) |
 | Fortschritt auf dem bereits eingerichteten VPS | [Statusbefehl](docs/PROJEKTSTAND.md#auf-dem-vps-bestätigt) |
