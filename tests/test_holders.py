@@ -15,7 +15,7 @@ from collectors.mint import TOKEN_PROGRAM, address_bytes
 from collectors.solana import Solana
 from config.settings import Settings
 from data.models import HolderAccount, MintRisk, utcnow
-from trading.risk import risk_reasons
+from trading.risk import risk_reasons, unobserved_account_bound
 
 SOL = "So11111111111111111111111111111111111111112"
 
@@ -101,12 +101,40 @@ def test_split_accounts_of_same_owner_are_aggregated(bundle, quote):
     assert "high_top10_owner_concentration" in risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
 
 
-def test_unobserved_supply_cannot_be_assumed_dispersed(bundle, quote):
+def test_unobserved_supply_is_bounded_by_smallest_sampled_account(bundle, quote):
+    # 181 unseen tokens, but no unseen account can exceed the smallest sampled one (1 = 0.5 %).
     for address in bundle["sample"][1:]:
         bundle["accounts"][address] = token_acc(bundle["token"], key(80 + bundle["sample"].index(address)), 1)
     h = assess(bundle)
     assert h.top10_owner_fraction_lower == Decimal(".05") and h.top10_owner_fraction_upper == Decimal(".955")
-    assert "uncertain_top10_owner_concentration" in risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
+    assert unobserved_account_bound(h) == Decimal(".005")
+    reasons = risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
+    assert not {"coarse_holder_sample", "high_top10_owner_concentration"} & set(reasons)
+
+
+def test_coarse_sample_keeps_unproven_concentration_blocked(bundle, quote):
+    # Smallest sampled account holds 2.5 %, so an unseen account could too: no proof of dispersion.
+    for address in bundle["sample"][1:]:
+        bundle["accounts"][address] = token_acc(bundle["token"], key(80 + bundle["sample"].index(address)), 5)
+    h = assess(bundle)
+    assert h.top10_owner_fraction_lower == Decimal(".25") and h.top10_owner_fraction_upper == Decimal(".775")
+    assert unobserved_account_bound(h) == Decimal(".025")
+    assert "coarse_holder_sample" in risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
+    looser = Settings(max_unobserved_account_fraction=Decimal(".03"))
+    assert "coarse_holder_sample" not in risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, looser)
+
+
+def test_sample_below_rpc_limit_observed_every_account(bundle, quote):
+    h = assess(bundle).model_copy(deep=True)
+    h.sampled_accounts = h.sampled_accounts[:5]
+    h.raw_unobserved_supply = "140"
+    assert unobserved_account_bound(h) == 0
+    h.raw_non_pool_supply = "0"
+    assert unobserved_account_bound(h) is None
+    h.raw_non_pool_supply = "200"
+    h.top10_owner_fraction_upper = None
+    reasons = risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
+    assert not {"coarse_holder_sample", "unknown_unobserved_account_size"} & set(reasons)
 
 
 def test_creator_balance_is_observed_lower_bound_not_developer_identity(bundle, quote):

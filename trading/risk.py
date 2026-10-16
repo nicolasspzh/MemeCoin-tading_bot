@@ -1,8 +1,32 @@
 from datetime import datetime
+from decimal import Decimal
 
 from config.settings import Settings
 from collectors.mint import TOKEN_2022_PROGRAM
-from data.models import Snapshot
+from data.models import HolderRisk, Snapshot
+
+
+LARGEST_ACCOUNTS_LIMIT = 20
+
+
+def unobserved_account_bound(holders: HolderRisk) -> Decimal | None:
+    """Upper bound for any single account outside the sample, as a non-pool supply fraction.
+
+    The sample holds the largest token accounts, so no unseen account exceeds the
+    smallest sampled one. A sample below the RPC limit (vault included) saw every
+    account. Owners spreading tokens over many small accounts remain undetected.
+    """
+    try:
+        supply = int(holders.raw_non_pool_supply or 0)
+        unobserved = int(holders.raw_unobserved_supply or 0)
+        amounts = [int(a.raw_amount) for a in holders.sampled_accounts]
+    except ValueError:
+        return None
+    if supply <= 0:
+        return None
+    if unobserved == 0 or len(amounts) < LARGEST_ACCOUNTS_LIMIT - 1:
+        return Decimal(0)
+    return Decimal(min(min(amounts), unobserved)) / supply
 
 
 def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry: bool = True) -> list[str]:
@@ -46,11 +70,19 @@ def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry
                 reasons.extend(holders.reasons)
                 if holders.status != "complete":
                     reasons.append("unverified_pool_and_holders")
-                elif holders.top10_owner_fraction_upper is None or holders.top10_owner_fraction_lower is None:
+                elif holders.top10_owner_fraction_lower is None:
                     reasons.append("unknown_owner_concentration")
-                elif holders.top10_owner_fraction_upper > settings.max_top10_owner_fraction:
-                    reasons.append("high_top10_owner_concentration" if holders.top10_owner_fraction_lower > settings.max_top10_owner_fraction
-                                   else "uncertain_top10_owner_concentration")
+                elif holders.top10_owner_fraction_lower > settings.max_top10_owner_fraction:
+                    reasons.append("high_top10_owner_concentration")
+                elif (holders.top10_owner_fraction_upper is None
+                      or holders.top10_owner_fraction_upper > settings.max_top10_owner_fraction):
+                    # The conservative upper bound failed: accept the observed share only
+                    # when every unseen account is provably small.
+                    unobserved = unobserved_account_bound(holders)
+                    if unobserved is None:
+                        reasons.append("unknown_unobserved_account_size")
+                    elif unobserved > settings.max_unobserved_account_fraction:
+                        reasons.append("coarse_holder_sample")
                 if holders.status == "complete":
                     if holders.lp_nonredeemable_fraction is None or holders.lp_nonredeemable_fraction < settings.min_lp_nonredeemable_fraction:
                         reasons.append("insufficient_verified_lp_nonredeemable_fraction")

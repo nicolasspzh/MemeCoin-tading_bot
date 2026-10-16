@@ -180,6 +180,28 @@ Ergebnis liefern wie die eingefrorene Version.
 8. Anti-FOMO und Risikogrösse.
 9. Echtgeld, Wallet, Signierung.
 
+## Umsetzungsstand
+
+Mit dem ersten R3-Code ändert sich der Code-Fingerprint. Das R2-Protokoll
+lässt sich auf diesem Stand nicht mehr laden. Das ist gewollt. Wer R2
+nachrechnen will, verwendet den eingefrorenen Code unter
+`uebergabe/2026-10-12/Projekt/` oder Git-Commit `84efd66`.
+
+| Punkt | Stand | Prüfung |
+| --- | --- | --- |
+| 3. Konzentrationsmessung | umgesetzt am 16.10. (`trading/risk.py`, Einstellung `max_unobserved_account_fraction`) | 3 neue Tests; R2-Zählung: 72 Coins bestehen (71 PumpSwap, 1 Raydium CPMM), vorher 0 |
+| 2. PumpSwap | offen | |
+| 4. Kosten je Pool | offen | |
+| 1. Vorfilter | offen | |
+| 5. Gegenwährung früh | offen | |
+
+Umgesetzte Konzentrationsregel: bestanden, wenn die konservative Obergrenze
+höchstens 60 % beträgt. Sonst bestanden, wenn der beobachtete Top-10-Anteil
+höchstens 60 % beträgt **und** kein unbeobachtetes Konto mehr als 1 % halten
+kann. Neue Sperrgründe: `coarse_holder_sample`,
+`unknown_unobserved_account_size`. `uncertain_top10_owner_concentration`
+entfällt.
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |

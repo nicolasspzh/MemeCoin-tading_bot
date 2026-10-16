@@ -37,6 +37,7 @@ class Settings(BaseModel):
     max_top10_account_fraction: Decimal = Field(default=Decimal("0.60"), gt=0, le=1)
     require_verified_holder_risk: bool = True
     max_top10_owner_fraction: Decimal = Field(default=Decimal("0.60"), gt=0, le=1)
+    max_unobserved_account_fraction: Decimal = Field(default=Decimal("0.01"), gt=0, le=1)
     max_creator_observed_fraction: Decimal = Field(default=Decimal("0.10"), gt=0, le=1)
     min_lp_nonredeemable_fraction: Decimal = Field(default=Decimal("0.90"), ge=0, le=1)
     fee_bps: Decimal = Field(default=Decimal("30"), ge=0, le=1000)
