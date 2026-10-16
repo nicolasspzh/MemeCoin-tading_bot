@@ -1,5 +1,9 @@
 # Nach dem R2-Ende: Sicherung und Auswertung
 
+> Am 16. Oktober 2026 nach Variante 5A durchgeführt. Ergebnis und gemessene
+> Werte (Arbeitsspeicher mindestens 11,4 GB, Datenbank 1,95 GB) stehen in
+> [R2-ERGEBNIS.md](R2-ERGEBNIS.md).
+
 Stand: 13. Oktober 2026, ergänzt um die Cloud-Variante. Diese Anleitung gilt **erst nach dem 16. Oktober 2026,
 03:06 Uhr Schweizer Zeit**. Vorher keinen dieser Schritte ausführen, ausser
 dem freiwilligen Schritt 0.

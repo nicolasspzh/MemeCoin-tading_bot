@@ -1,10 +1,28 @@
-# Projektstand am 13. Oktober 2026
+# Projektstand am 16. Oktober 2026
 
 Dieses Dokument trennt vorhandenen Code, lokale Tests und den vom Betreiber
 bestätigten VPS-Betrieb. Der Bot führt keine echten Trades aus. Eine profitable
 Strategie ist bisher nicht nachgewiesen.
 
-## Auf dem VPS bestätigt
+## R2 abgeschlossen
+
+Die R2-Sammlung endete planmässig am 16. Oktober 2026 um 03:06 Uhr. Die
+vorab festgelegte Auswertung ergab **`INSUFFICIENT_EVIDENCE`**: alle
+Datenqualitätsanforderungen erfüllt, aber **null Trades** in allen sechs
+Läufen. Details, Prüfung und Entwicklungsanalyse:
+**[R2-Ergebnis](R2-ERGEBNIS.md)**.
+
+Kurzfassung der Ursachen: Die meisten aufgenommenen Coins waren zu klein;
+die grossen lagen fast alle auf dem gesperrten PumpSwap; und die
+Top-10-Konzentrationsregel war in keiner einzigen vollständigen Prüfung
+bestehbar. Die R2-Daten gelten ab jetzt als Entwicklungsdaten.
+
+Telegram-Monitor des Sammlers: Abschaltung am 16. Oktober angeleitet
+(`systemctl disable --now memecoin-telegram.timer`); die Bestätigung vom
+Betreiber steht noch aus. Auf dem VPS wurde nichts gelöscht.
+
+## Letzter Betriebsstand während R2
+
 
 Quelle: vom Betreiber bereitgestellte Statusausgabe vom **12. Oktober 2026,
 16:12:32 Uhr Europe/Zurich**. Das ist ein gespeicherter Stand, keine Live-Anzeige.
@@ -98,22 +116,22 @@ Prüfsummen während der laufenden Sammlung nicht ändern.
 
 ## Als Nächstes
 
-1. Sammlung bis zum geplanten Ende überwachen; Anbieter-Credits separat prüfen.
-2. Nach dem Ende genau nach [NACH-R2-ENDE.md](NACH-R2-ENDE.md) vorgehen:
-   Ende prüfen, geprüfte finale Kopie erstellen, auf den PC holen und extern
-   aufbewahren. GitHub enthält diese Daten nicht.
-3. Mit dem passenden unveränderten R2-Protokoll auswerten, in einer
-   Claude-Code-Cloud-Sitzung oder auf dem PC, nicht auf VPS oder NAS, weil die
-   Auswertung voraussichtlich mehrere GB Arbeitsspeicher braucht: Datenabdeckung, Nettoergebnisse nach Kosten, offene Positionen und Verluste.
-4. Über einen begrenzten Paper-Betrieb mit echten Marktdaten entscheiden und
-   dessen Installation/Telegram/Last auf dem VPS gesondert prüfen.
-5. Neue Einstiegsvarianten getrennt integrieren und vorab festgelegt testen.
-   Daten, an denen Parameter ausgewählt wurden, gelten danach als Entwicklung,
-   nicht als unabhängiger Bestätigungstest.
-6. Ideen aus der [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md) prüfen,
-   vor allem realistische Gebühren je Pool (PumpSwap bis 1,25 % pro Trade statt
-   der modellierten 0,3 %) und eine frühe Sperre fremder Gegenwährungen.
-   Erst nach der R2-Auswertung und mit neuem Protokoll.
+Erledigt: R2-Sammlung, finale Sicherung nach [NACH-R2-ENDE.md](NACH-R2-ENDE.md)
+und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
+
+1. Externe Kopien der finalen Datenbank bestätigen (PC und NAS), erst danach
+   über Aufräumen auf dem VPS entscheiden.
+2. VPS absichern: SSH-Anmeldung auf Schlüssel umstellen, Telegram-Timer des
+   Sammlers abgeschaltet lassen.
+3. R3 entwerfen, auf Basis der Entwicklungsanalyse in
+   [R2-ERGEBNIS.md](R2-ERGEBNIS.md) und der
+   [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md): Vorfilter bei der
+   Aufnahme, PumpSwap mit Gebührenstaffel, neue Konzentrationsmessung,
+   realistische Kosten je Pool.
+4. Änderungen mit Tests und auf den Entwicklungsdaten prüfen, dann ein neues
+   Protokoll mit zukünftigem Testfenster festlegen.
+5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
+   entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
 
 `REVIEWABLE_HOLDOUT` bedeutet prüfbare Evidenz, keine automatische Handelsfreigabe.
 Wallet-Schlüssel, Signierung und echte Orderausführung sind nicht implementiert.

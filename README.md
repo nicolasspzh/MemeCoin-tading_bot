@@ -14,19 +14,17 @@ Die [Leseanleitung](uebergabe/README.md) erklärt aktuelle Quellen, eingefrorene
 Referenzdaten und historische Pakete. Die enthaltene Entwicklungsdatenbank ist
 keine Kopie der aktuell laufenden VPS-Sammlung.
 
-## Aktueller Stand am 13. Oktober 2026
+## Aktueller Stand am 16. Oktober 2026
 
 **[Projektstand und nächste Schritte](docs/PROJEKTSTAND.md)**
 
-- Auf dem Debian-VPS läuft die R2-Datensammlung mit Telegram-Berichten.
-- Letzte übermittelte Messung vom 12. Oktober: 129'194 Beobachtungen zu 467 Coins;
-  98,4 % mit Kurs. Installierter Code per Prüfsumme als unverändert bestätigt.
-- Geplantes Ende: **16. Oktober 2026, 03:06 Uhr Schweizer Zeit**.
-  Danach: **[Anleitung für Sicherung und Auswertung](docs/NACH-R2-ENDE.md)**.
+- Die R2-Datensammlung auf dem VPS ist planmässig beendet (16. Oktober 2026, 03:06 Uhr).
+- Ergebnis der vorab festgelegten Auswertung: **`INSUFFICIENT_EVIDENCE`**, gute
+  Datenqualität, aber null Trades. Ursachen und Analyse: **[R2-Ergebnis](docs/R2-ERGEBNIS.md)**.
 - Eigenständiger Paper-Dienst, Paper-Telegram und Auswertungsbericht sind lokal
   vorbereitet. Neue Anti-FOMO-/Risikogrößen-Regeln sind isolierte Testvarianten.
-- **337 Tests**; Datenqualität und Profitabilität der laufenden Sammlung sind
-  noch abschließend zu bewerten. Das Qualitätsflag ist weiterhin gesetzt.
+- **337 Tests**. Profitabilität bleibt unbelegt; die R2-Daten gelten jetzt als
+  Entwicklungsdaten für eine nächste Version.
 
 Dieses Repository enthält Code, Tests, Dienstvorlagen, Anleitungen und
 künstliche Vorschauen sowie seit dem 12. Oktober das ausdrücklich freigegebene
@@ -66,6 +64,7 @@ keine Trades und berechnet keine Rendite.
 | Thema | Dokument |
 | --- | --- |
 | Was läuft, was fehlt, Zeitfenster | [Projektstand](docs/PROJEKTSTAND.md) |
+| Ergebnis und Analyse von R2 | [R2-Ergebnis](docs/R2-ERGEBNIS.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
 | Recherche und Ideen für die nächste Version | [Recherche](docs/RECHERCHE-2026-10-13.md) |
 | Fortschritt auf dem bereits eingerichteten VPS | [Statusbefehl](docs/PROJEKTSTAND.md#auf-dem-vps-bestätigt) |
