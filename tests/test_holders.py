@@ -368,3 +368,15 @@ def test_replay_rejects_dangling_or_damaged_risk_proof(bundle, quote, engine, tm
             engine.db.conn.execute("UPDATE risk_evidence SET payload='{}'")
     with pytest.raises(ValueError, match="risk evidence"):
         read_observations(tmp_path / "test.sqlite3", allow_demo=True)
+
+
+async def test_foreign_quote_pool_is_blocked_before_reading_vaults(bundle):
+    from collectors.holders import verify_holders
+    raw = bytearray(base64.b64decode(bundle["accounts"][bundle["pair"]]["data"][0]))
+    raw[200:232] = address_bytes(key(77))  # quote mint is not wSOL/USDC
+    bundle["accounts"][bundle["pair"]] = account(CPMM_PROGRAM, raw)
+    http = RiskHTTP(bundle)
+    h, current = await verify_holders(Solana(http, "https://rpc.example"), bundle["token"], bundle["pair"],
+                                      bundle["sample"], 100)
+    assert h.status == "unsupported_pool" and h.reasons == ["unsupported_quote_mint"] and current is None
+    assert [method for method, _ in http.calls] == ["getAccountInfo"]  # batch request saved

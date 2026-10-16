@@ -386,7 +386,13 @@ async def verify_holders(rpc, token, pair, sampled_addresses, sample_slot):
                           reasons=["unsupported_pool_program"]), None
     if token not in pool["mints"]:
         raise DataUnavailable("Pool does not contain requested mint")
-    extra = [PUMP_FEE_CONFIG] if pool["program"] == PUMP_PROGRAM else []
+    if pool["mints"][1 - pool["mints"].index(token)] not in QUOTE_MINTS:
+        # Clear block before reading vaults: a foreign quote asset (for example a
+        # tokenized stock with transfer hooks) is never tradable here. Saves the batch.
+        return HolderRisk(token=token, pair=pair, status="unsupported_pool", checked_at=utcnow(), slot=pool_slot,
+                          rpc_host=rpc._last_host, pool_program=pool["program"],
+                          reasons=["unsupported_quote_mint"]), None
+    extra =[PUMP_FEE_CONFIG] if pool["program"] == PUMP_PROGRAM else []
     keys = list(dict.fromkeys([token, pair, *sampled_addresses, *pool["vaults"], pool["lp_mint"], pool["config"], *extra]))
     result = await rpc.rpc("getMultipleAccounts", [keys, {"encoding": "base64", "commitment": "confirmed",
                                                          "minContextSlot": max(pool_slot, sample_slot)}])

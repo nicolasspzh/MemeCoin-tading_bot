@@ -230,3 +230,103 @@ async def test_pinned_pool_batch_omission_recovers_without_extra_risk_on_missing
         assert db.counts()['snapshots'] == 2
     finally:
         db.close()
+
+
+WSOL = 'So11111111111111111111111111111111111111112'
+
+
+def dex_quote(token, pair, *, dex_id='pumpswap', labels=None, quote_mint=WSOL, liquidity='20000', at=START):
+    return Snapshot(token=token, pair=pair, source='dexscreener', received_at=at, price_usd=Decimal('1'),
+                    liquidity_usd=Decimal(liquidity) if liquidity is not None else None,
+                    raw={'dexId': dex_id, 'labels': labels, 'quoteToken': {'address': quote_mint}})
+
+
+@pytest.mark.parametrize('kwargs,reasons', [
+    ({}, []),
+    ({'dex_id': 'raydium', 'labels': ['CPMM']}, []),
+    ({'dex_id': 'raydium', 'labels': ['CLMM']}, ['unsupported_dex_pool']),
+    ({'dex_id': 'pumpfun'}, ['unsupported_dex_pool']),
+    ({'dex_id': 'meteoradbc'}, ['unsupported_dex_pool']),
+    ({'quote_mint': 'Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg'}, ['unsupported_quote_mint']),
+    ({'liquidity': '9999'}, ['insufficient_or_unknown_liquidity']),
+    ({'liquidity': None}, ['insufficient_or_unknown_liquidity']),
+])
+def test_admission_prefilter_reasons(kwargs, reasons):
+    from collectors.schedule import admission_reasons
+    assert admission_reasons(dex_quote('A', 'P', **kwargs), Settings()) == reasons
+    assert admission_reasons(None, Settings()) == ['no_dex_pair']
+
+
+@pytest.fixture
+def prefiltered(cohort):
+    db, settings, recorder, _ = cohort
+    settings = settings.model_copy(update={'admission_prefilter': True})
+    return db, settings, recorder, ObservationSchedule(db, settings)
+
+
+def test_prefilter_admits_oldest_eligible_coin_with_screened_pool(prefiltered):
+    db, settings, recorder, schedule = prefiltered
+    now = START.timestamp() + 10
+    assert schedule.admission_due(now) and schedule.screen_candidates(now) == ['A', 'B', 'C']
+    schedule.record_screens(now, {'A': dex_quote('A', 'A-CURVE', dex_id='pumpfun'),
+                                  'B': dex_quote('B', 'B-SWAP'), 'C': None})
+    assert schedule.screen_candidates(now) == []          # no rescreen within 5 minutes
+    assert schedule.select(now) == ['B']                  # A is older but not eligible
+    assert schedule.preferred_pair('B') == 'B-SWAP'       # exactly the screened pool
+    rows = dict(db.conn.execute('SELECT token,eligible FROM admission_screens'))
+    assert rows == {'A': 0, 'B': 1, 'C': 0}
+    assert schedule.status(now)['screens_last_hour'] == {'eligible': 1, 'rejected': 2}
+    assert schedule.screen_candidates(now + 301) == ['A', 'C']  # rejected coins may qualify later
+
+
+def test_prefilter_needs_fresh_latest_screen(prefiltered):
+    db, settings, recorder, schedule = prefiltered
+    now = START.timestamp() + 10
+    schedule.record_screens(now, {'A': dex_quote('A', 'A-SWAP')})
+    assert schedule.select(now + 121) == []               # screen too old to admit
+    schedule.record_screens(now + 400, {'A': dex_quote('A', 'A-SWAP', liquidity='500')})
+    assert schedule.select(now + 401) == []               # latest screen rejects
+    schedule.record_screens(now + 800, {'A': dex_quote('A', 'A-SWAP')})
+    assert schedule.select(now + 801) == ['A']
+
+
+def test_without_prefilter_admission_is_unchanged(cohort):
+    db, settings, recorder, schedule = cohort
+    assert schedule.select(START.timestamp() + 10) == ['A', 'B']
+    assert db.conn.execute('SELECT count(*) FROM admission_screens').fetchone()[0] == 0
+
+
+async def test_collect_screens_candidates_before_admission(tmp_path, monkeypatch, quote):
+    db = Database(tmp_path / 'live.sqlite3', 'dexscreener')
+    settings = Settings(observation_cohorts=True, pool_discovery_enabled=False, max_watch_tokens=2,
+                        admission_prefilter=True)
+    recorder = Recorder(db, settings)
+    batches = []
+
+    class Dex:
+        def __init__(self, *args): pass
+        async def discover(self): return ['OLD', 'GOOD']
+
+        async def snapshots(self, tokens, preferred):
+            batches.append((list(tokens), dict(preferred)))
+            now = main.utcnow()
+            if not preferred:  # screening round
+                return {'OLD': dex_quote('OLD', 'OLD-CURVE', dex_id='pumpfun', at=now),
+                        'GOOD': dex_quote('GOOD', 'GOOD-SWAP', at=now)}
+            return {t: None for t in tokens}
+
+        async def snapshot(self, token, preferred): return None
+
+    class RPC:
+        def __init__(self, *args, **kwargs): self.stats = {}
+
+    monkeypatch.setattr(main, 'DexScreener', Dex)
+    monkeypatch.setattr(main, 'Solana', RPC)
+    try:
+        await main.collect(recorder, once=True)
+        assert batches[0] == (['OLD', 'GOOD'], {})
+        assert batches[1][1] == {'GOOD': 'GOOD-SWAP'}
+        tracks = dict(db.conn.execute('SELECT token,pair FROM observation_tracks'))
+        assert tracks == {'GOOD': 'GOOD-SWAP'}
+    finally:
+        db.close()

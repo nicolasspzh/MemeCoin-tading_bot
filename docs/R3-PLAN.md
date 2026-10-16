@@ -192,8 +192,8 @@ nachrechnen will, verwendet den eingefrorenen Code unter
 | 3. Konzentrationsmessung | umgesetzt am 16.10. (`trading/risk.py`, Einstellung `max_unobserved_account_fraction`) | 3 neue Tests; R2-Zählung: 72 Coins bestehen (71 PumpSwap, 1 Raydium CPMM), vorher 0 |
 | 2. PumpSwap | umgesetzt am 16.10. (`collectors/holders.py`, `trading/risk.py`, Einstellung `min_pumpswap_age_seconds`) | 18 neue Tests in `tests/test_pumpswap.py`, u. a. PDA-Vergleich mit solders 0.26.0 und echtes Gebührenkonto vom 08.09. |
 | 4. Kosten je Pool | umgesetzt am 16.10. (`trading/risk.py`, `execution.py`, `paper_wallet.py`; Einstellung `max_pool_fee_bps`); Sandwich-Aufschlag offen bis Stufe E | 4 neue Tests |
-| 1. Vorfilter | offen | |
-| 5. Gegenwährung früh | offen | |
+| 1. Vorfilter | umgesetzt am 16.10. (`collectors/schedule.py`, `main.py`, Tabelle `admission_screens`, Einstellung `admission_prefilter`) | 12 neue Tests, darunter ein ganzer Sammelzyklus |
+| 5. Gegenwährung früh | umgesetzt am 16.10. (`collectors/holders.py`) | 1 neuer Test: Sperre ohne Kontenabfrage |
 
 Umgesetzte Konzentrationsregel: bestanden, wenn die konservative Obergrenze
 höchstens 60 % beträgt. Sonst bestanden, wenn der beobachtete Top-10-Anteil
@@ -223,6 +223,23 @@ zur Ausführung sinkt von 10 % auf 3 %, auch im Stress-Szenario.
 
 Noch offen: der Sandwich-Aufschlag im Stress-Szenario. Seine Höhe wird mit dem
 R3-Protokoll vor Testbeginn festgelegt.
+
+Umgesetzt für die Aufnahme: Ist `admission_prefilter` eingeschaltet, prüft der
+Sammler vor jeder möglichen Aufnahme bis zu 30 wartende Kandidaten mit einer
+DEX-Screener-Anfrage. Geeignet ist ein Coin mit Raydium CPMM oder PumpSwap,
+Gegenwährung wSOL oder USDC, Kurs und mindestens 10'000 USD Liquidität laut
+DEX Screener. Aufgenommen wird der älteste geeignete Kandidat mit höchstens
+120 Sekunden alter Prüfung, und zwar mit genau dem geprüften Pool. Abgelehnte
+Kandidaten werden frühestens nach 5 Minuten erneut geprüft. Jede Prüfung wird
+mit Grund in `admission_screens` gespeichert. Ohne die Einstellung bleibt die
+Aufnahme wie in R2. Eingeschaltet wird sie mit der R3-Sammlung in Stufe E.
+
+Umgesetzt für fremde Gegenwährungen: Die Pool-Prüfung endet direkt nach dem
+Lesen des Pools mit `unsupported_quote_mint`, ohne die Tresore zu lesen. Das
+spart die grosse Kontenabfrage und vermeidet Datenfehler durch Token-2022-
+Erweiterungen fremder Gegenwährungen.
+
+**Stufe B ist damit bis auf den Sandwich-Aufschlag abgeschlossen.**
 
 ## Ablauf und Erfolgsbedingungen
 

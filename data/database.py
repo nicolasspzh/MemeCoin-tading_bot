@@ -61,6 +61,11 @@ class Database:
                 token TEXT PRIMARY KEY REFERENCES tokens(token), pair TEXT,
                 admitted_at REAL NOT NULL, primary_until REAL NOT NULL,
                 follow_until REAL NOT NULL, last_primary_at REAL, completed_at REAL);
+            CREATE TABLE IF NOT EXISTS admission_screens(
+                id INTEGER PRIMARY KEY, token TEXT NOT NULL REFERENCES tokens(token),
+                screened_at REAL NOT NULL, eligible INTEGER NOT NULL CHECK(eligible IN (0,1)),
+                pair TEXT, payload TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS admission_screens_token ON admission_screens(token, screened_at);
             CREATE TABLE IF NOT EXISTS rpc_request_budget(
                 utc_day TEXT PRIMARY KEY, requests INTEGER NOT NULL CHECK(requests>=0));
             CREATE TABLE IF NOT EXISTS paper_orders(

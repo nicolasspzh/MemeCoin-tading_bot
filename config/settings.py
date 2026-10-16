@@ -25,6 +25,8 @@ class Settings(BaseModel):
     observation_cohorts: bool = False
     observation_primary_seconds: int = Field(default=1800, ge=300, le=7200)
     observation_admission_seconds: int = Field(default=0, ge=0, le=3600)
+    # Admit only coins whose DEX quote shows a supported pool, quote asset and liquidity.
+    admission_prefilter: bool = False
     rpc_daily_request_limit: int = Field(default=70000, ge=1)
     rpc_total_request_limit: int = Field(default=600000, ge=1)
     pool_discovery_enabled: bool = True

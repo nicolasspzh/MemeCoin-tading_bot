@@ -79,6 +79,16 @@ async def collect(engine: Engine, once: bool, cycles: int | None = None) -> int:
                 with db.conn:
                     for token in settings.watch_tokens:
                         db.discover(token, utcnow().timestamp(), "watchlist")
+                if schedule and settings.admission_prefilter and schedule.admission_due(utcnow().timestamp()):
+                    waiting = schedule.screen_candidates(utcnow().timestamp())
+                    if waiting:
+                        try:
+                            screened = await dex.snapshots(waiting, {})
+                            schedule.record_screens(utcnow().timestamp(), {t: screened.get(t) for t in waiting})
+                        except (DataUnavailable, ValidationError, TypeError, KeyError, AttributeError):
+                            failures += 1
+                            with db.conn:
+                                db.record_health("scheduler", utcnow().timestamp(), "screen_error", "Admission screen unavailable")
                 wallet = db.load_wallet()
                 pending_pairs = {o["token"]: o["pair"] for o in db.pending_orders()}
                 candidates = (schedule.select(utcnow().timestamp()) if schedule else
