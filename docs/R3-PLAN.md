@@ -191,7 +191,7 @@ nachrechnen will, verwendet den eingefrorenen Code unter
 | --- | --- | --- |
 | 3. Konzentrationsmessung | umgesetzt am 16.10. (`trading/risk.py`, Einstellung `max_unobserved_account_fraction`) | 3 neue Tests; R2-Zählung: 72 Coins bestehen (71 PumpSwap, 1 Raydium CPMM), vorher 0 |
 | 2. PumpSwap | umgesetzt am 16.10. (`collectors/holders.py`, `trading/risk.py`, Einstellung `min_pumpswap_age_seconds`) | 18 neue Tests in `tests/test_pumpswap.py`, u. a. PDA-Vergleich mit solders 0.26.0 und echtes Gebührenkonto vom 08.09. |
-| 4. Kosten je Pool | offen | |
+| 4. Kosten je Pool | umgesetzt am 16.10. (`trading/risk.py`, `execution.py`, `paper_wallet.py`; Einstellung `max_pool_fee_bps`); Sandwich-Aufschlag offen bis Stufe E | 4 neue Tests |
 | 1. Vorfilter | offen | |
 | 5. Gegenwährung früh | offen | |
 
@@ -212,9 +212,17 @@ vollständig geprüften Pools: Liquidität on-chain aus der Quote-Reserve
 (`insufficient_onchain_liquidity`, `unknown_onchain_liquidity`). Neu für
 PumpSwap: Einstieg erst ab 10 Minuten Poolalter (`pumpswap_boost_window`).
 
-Bewusst noch gesperrt: PumpSwap-Pools mit Gebühr über 0,3 % scheitern an
-`pool_fees_exceed_execution_assumption`, bis Punkt 4 die Gebühr je Pool in
-die Kosten übernimmt.
+Umgesetzt für die Kosten: Jeder simulierte Kauf und Verkauf berechnet die im
+Pool gemessene Gebühr (`known_fee_bps`) statt fix 0,3 %. Gesperrt wird nur noch
+bei unbekannter Gebühr (`unknown_pool_fees`) oder mehr als 2 % pro Trade
+(`pool_fee_above_limit`). Daten ohne geprüften Pool (Demo, Altbestand) behalten
+die feste Annahme. Offene Positionen werden mit der zuletzt gemessenen Gebühr
+bewertet. Poolbeteiligung (0,1 %) und Preiseinfluss rechnen mit der kleineren
+Liquidität aus DEX Screener und on-chain. Die erlaubte ungünstige Bewegung bis
+zur Ausführung sinkt von 10 % auf 3 %, auch im Stress-Szenario.
+
+Noch offen: der Sandwich-Aufschlag im Stress-Szenario. Seine Höhe wird mit dem
+R3-Protokoll vor Testbeginn festgelegt.
 
 ## Ablauf und Erfolgsbedingungen
 

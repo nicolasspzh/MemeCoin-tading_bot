@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from config.settings import Settings
 from collectors.holders import PUMP_PROGRAM, USDC_MINT, WSOL_MINT
@@ -52,6 +52,37 @@ def onchain_liquidity_usd(snapshot: Snapshot, holders: HolderRisk) -> Decimal | 
     except (KeyError, ValueError, TypeError, IndexError, ArithmeticError):
         return None
     return value if value.is_finite() and value >= 0 else None
+
+
+def _complete_holders(snapshot: Snapshot) -> HolderRisk | None:
+    risk = snapshot.mint_risk
+    holders = risk.holder_risk if risk else None
+    return holders if holders is not None and holders.status == "complete" else None
+
+
+def pool_fee_bps(snapshot: Snapshot, settings: Settings) -> Decimal | None:
+    """Per-trade pool fee measured in the verified pool; None when it is unknown.
+
+    Observations without a verified pool (demo, legacy) keep the configured
+    assumption. A verified pool without a readable fee never falls back to it.
+    """
+    holders = _complete_holders(snapshot)
+    if holders is None:
+        return settings.fee_bps
+    fee = holders.pool_details.get("known_fee_bps")
+    try:
+        value = Decimal(str(fee)) if fee is not None else None
+    except (InvalidOperation, ValueError):
+        return None
+    return value if value is not None and value.is_finite() and 0 <= value <= 10000 else None
+
+
+def trade_liquidity_usd(snapshot: Snapshot) -> Decimal | None:
+    """Liquidity for pool participation and impact: the lower of DEX and verified on-chain value."""
+    holders = _complete_holders(snapshot)
+    onchain = onchain_liquidity_usd(snapshot, holders) if holders is not None else None
+    values = [value for value in (snapshot.liquidity_usd, onchain) if value is not None]
+    return min(values) if values else None
 
 
 def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry: bool = True) -> list[str]:
@@ -120,15 +151,12 @@ def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry
                         reasons.append("unknown_creator_observed_balance")
                     elif holders.creator_observed_fraction > settings.max_creator_observed_fraction:
                         reasons.append("high_creator_observed_balance")
-                    from decimal import Decimal, InvalidOperation
-                    fee = holders.pool_details.get("known_fee_bps")
-                    if fee is not None:
-                        try:
-                            measured_fee = Decimal(fee)
-                            if not measured_fee.is_finite() or measured_fee < 0 or measured_fee > settings.fee_bps:
-                                reasons.append("pool_fees_exceed_execution_assumption")
-                        except (InvalidOperation, ValueError, TypeError):
-                            reasons.append("unknown_pool_fees")
+                    # Fills charge the measured pool fee; only unknown or extreme fees block.
+                    fee = pool_fee_bps(snapshot, settings)
+                    if fee is None:
+                        reasons.append("unknown_pool_fees")
+                    elif fee > settings.max_pool_fee_bps:
+                        reasons.append("pool_fee_above_limit")
         elif risk.top10_account_fraction is None:
             reasons.append("unknown_account_concentration")
         elif risk.top10_account_fraction > settings.max_top10_account_fraction:

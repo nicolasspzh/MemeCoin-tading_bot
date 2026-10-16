@@ -39,7 +39,7 @@ def market_quote(quote):
             slot=1, pool_program="test-program", status="complete",
             top10_owner_fraction_lower=Decimal(".25"), top10_owner_fraction_upper=Decimal(".25"),
             creator_observed_fraction=Decimal(0), lp_nonredeemable_fraction=Decimal(1),
-            pool_details={"mints": [snapshot.token, wsol],
+            pool_details={"mints": [snapshot.token, wsol], "known_fee_bps": "25",
                           "raw_vault_reserves_after_fees": ["1000000", "100000000000"]})
         return snapshot
     return make

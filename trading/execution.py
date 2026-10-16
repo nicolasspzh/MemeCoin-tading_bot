@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from config.settings import Settings
 from data.models import Fill, Snapshot, Wallet
 from trading.paper_wallet import CannotFill, buy, equity, sell
-from trading.risk import risk_reasons
+from trading.risk import pool_fee_bps, risk_reasons, trade_liquidity_usd
 
 
 class Execution(BaseModel):
@@ -18,7 +18,7 @@ class Execution(BaseModel):
     order_ttl_seconds: float = Field(default=120, gt=0)
     priority_fee_usd: D = Field(default=D("0.005"), ge=0)
     failure_probability: float = Field(default=0.02, ge=0, le=1)
-    max_adverse_move_bps: D = Field(default=D("1000"), ge=0, le=10000)
+    max_adverse_move_bps: D = Field(default=D("300"), ge=0, le=10000)
     seed: int = 7
 
     @classmethod
@@ -47,7 +47,7 @@ def execution_blockers(snapshot: Snapshot, now: datetime, settings: Settings, si
         "stale_or_future_onchain_checks", "unsupported_token_program", "incomplete_onchain_checks",
         "freeze_authority_active_or_unknown", "token2022_extensions_unverified_or_unsafe",
         "missing_verified_holder_risk", "holder_risk_token_or_pool_mismatch", "unverified_pool_and_holders",
-        "pool_fees_exceed_execution_assumption", "unknown_pool_fees"}
+        "pool_fee_above_limit", "unknown_pool_fees"}
     risk = snapshot.mint_risk
     extra = set(risk.extension_reasons) if risk else set()
     if risk and risk.holder_risk:
@@ -72,10 +72,15 @@ def attempt(wallet: Wallet, order: dict, snapshot: Snapshot, sid: int, now: date
     notional = (D(order["budget_usd"]) if side == "BUY" else
                 candidate.positions[snapshot.token].quantity * (snapshot.price_usd or 0)
                 if snapshot.token in candidate.positions else D(0))
-    impact = 2 * notional / snapshot.liquidity_usd * 10000 if snapshot.liquidity_usd else D(0)
+    liquidity = trade_liquidity_usd(snapshot)
+    impact = 2 * notional / liquidity * 10000 if liquidity else D(0)
     impact = min(impact, (D(10000) - settings.slippage_bps) / 2)
+    # The measured pool fee replaces the fixed assumption. An unknown fee is priced
+    # at the limit; such a fill is rejected below by its risk blockers anyway.
+    fee = pool_fee_bps(snapshot, settings)
     fill_settings = valuation_settings(settings, execution).model_copy(
-        update={"slippage_bps": settings.slippage_bps + impact})
+        update={"slippage_bps": settings.slippage_bps + impact,
+                "fee_bps": settings.max_pool_fee_bps if fee is None else fee})
     try:
         if side == "SELL" and snapshot.token not in candidate.positions:
             raise CannotFill("position_missing")

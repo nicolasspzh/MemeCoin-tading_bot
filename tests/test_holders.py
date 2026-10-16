@@ -176,10 +176,27 @@ def test_disabled_swap_and_excess_fees_block_entry(bundle, quote):
     acc = bundle["accounts"][bundle["pair"]]; raw = bytearray(base64.b64decode(acc["data"][0]));raw[329] = 4
     bundle["accounts"][bundle["pair"]] = account(CPMM_PROGRAM, raw)
     config = bundle["expected"]["config"]; raw = bytearray(base64.b64decode(bundle["accounts"][config]["data"][0]))
-    struct.pack_into("<Q", raw, 12, 10000);bundle["accounts"][config] = account(CPMM_PROGRAM, raw)
+    struct.pack_into("<Q", raw, 12, 30000);bundle["accounts"][config] = account(CPMM_PROGRAM, raw)  # 3 %
     h = assess(bundle)
     reasons = risk_reasons(risk_snapshot(quote, bundle, h), h.checked_at, Settings())
-    assert "pool_swaps_disabled" in reasons and "pool_fees_exceed_execution_assumption" in reasons
+    assert "pool_swaps_disabled" in reasons and "pool_fee_above_limit" in reasons
+
+
+def test_measured_pool_fee_is_charged_instead_of_fixed_assumption(bundle, quote):
+    from trading.execution import Execution, attempt
+    from data.models import Wallet
+    config = bundle["expected"]["config"]; raw = bytearray(base64.b64decode(bundle["accounts"][config]["data"][0]))
+    struct.pack_into("<Q", raw, 12, 10000);bundle["accounts"][config] = account(CPMM_PROGRAM, raw)  # 1 %
+    h = assess(bundle)
+    s = risk_snapshot(quote, bundle, h)
+    assert h.pool_details["known_fee_bps"] == "100"
+    assert not {"pool_fee_above_limit", "unknown_pool_fees"} & set(risk_reasons(s, h.checked_at, Settings()))
+    order = {"id": 1, "token": s.token, "action": "BUY", "budget_usd": "2", "signal_price_usd": str(s.price_usd),
+             "signal_at": s.received_at.isoformat(), "signal_snapshot_id": 1}
+    outcome = attempt(Wallet(), order, s, 1, s.received_at, Settings(), Execution(failure_probability=0), Decimal(1))
+    fixed = Decimal("0.02") + Decimal("0.005")
+    assert outcome.status == "filled" and outcome.fill.fee == Decimal(2) - (Decimal(2) - fixed) / Decimal("1.01")
+    assert outcome.wallet.positions[s.token].exit_fee_bps == Decimal(100)
 
 
 def test_fees_cannot_be_mistaken_for_spendable_pool_reserves(bundle):

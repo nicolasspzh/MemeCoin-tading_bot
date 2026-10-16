@@ -108,7 +108,7 @@ def run(args) -> dict:
     scenarios = {"baseline": (settings, Execution(seed=args.seed)),
                  "stress": (settings.model_copy(update={"slippage_bps": Decimal("300")}),
                             Execution(latency_seconds=5, priority_fee_usd=Decimal("0.02"),
-                                      failure_probability=0.10, max_adverse_move_bps=Decimal("500"), seed=args.seed))}
+                                      failure_probability=0.10, max_adverse_move_bps=Decimal("300"), seed=args.seed))}
     selected = scenarios if args.scenario == "both" else {args.scenario: scenarios[args.scenario]}
     result = {"generated_at_utc": datetime.now(UTC).isoformat(), "input": provenance,
               "output_directory": str(args.out), "source_code_sha256": source_code_digest(),

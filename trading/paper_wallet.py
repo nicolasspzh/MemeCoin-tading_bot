@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from config.settings import Settings
 from data.models import Fill, Position, Snapshot, Wallet
+from trading.risk import pool_fee_bps, trade_liquidity_usd
 
 D = Decimal
 
@@ -14,7 +15,8 @@ class CannotFill(ValueError):
 
 def estimated_proceeds(position: Position, price: Decimal, settings: Settings) -> Decimal:
     gross = position.quantity * price * (1 - settings.slippage_bps / 10000)
-    return max(D(0), gross * (1 - settings.fee_bps / 10000) - settings.fixed_fee_usd)
+    fee_bps = settings.fee_bps if position.exit_fee_bps is None else position.exit_fee_bps
+    return max(D(0), gross * (1 - fee_bps / 10000) - settings.fixed_fee_usd)
 
 
 def equity(wallet: Wallet, settings: Settings) -> Decimal:
@@ -28,6 +30,9 @@ def mark(wallet: Wallet, snapshot: Snapshot, settings: Settings):
     if p and p.pair == snapshot.pair and snapshot.price_usd is not None:
         p.last_price = snapshot.price_usd
         p.peak_price = max(p.peak_price, snapshot.price_usd)
+        fee = pool_fee_bps(snapshot, settings)
+        if fee is not None:
+            p.exit_fee_bps = fee  # PumpSwap fees change with market cap
     # DEAD is latched. Open positions may still exit, but no further entries.
     if equity(wallet, settings) < 5:
         wallet.dead = True
@@ -56,7 +61,7 @@ def allocate_profit(wallet: Wallet, profit: Decimal, pre_profit_capital: Decimal
 def _validate_quote(snapshot: Snapshot, now: datetime, settings: Settings):
     if not 0 <= (now - snapshot.received_at).total_seconds() <= settings.max_quote_age_seconds:
         raise CannotFill("stale_or_future_quote")
-    if snapshot.price_usd is None or not snapshot.liquidity_usd:
+    if snapshot.price_usd is None or not trade_liquidity_usd(snapshot):
         raise CannotFill("unpriced_or_illiquid")
 
 
@@ -73,7 +78,7 @@ def buy(wallet: Wallet, snapshot: Snapshot, sid: int, now: datetime, settings: S
         raise CannotFill("insufficient_cash")
     if budget <= settings.fixed_fee_usd:
         raise CannotFill("insufficient_cash")
-    if budget > snapshot.liquidity_usd * settings.max_pool_fraction:
+    if budget > trade_liquidity_usd(snapshot) * settings.max_pool_fraction:
         raise CannotFill("excessive_pool_participation")
     notional = (budget - settings.fixed_fee_usd) / (1 + settings.fee_bps / 10000)
     price = snapshot.price_usd * (1 + settings.slippage_bps / 10000)
@@ -83,7 +88,7 @@ def buy(wallet: Wallet, snapshot: Snapshot, sid: int, now: datetime, settings: S
     wallet.positions[snapshot.token] = Position(
         token=snapshot.token, pair=snapshot.pair, quantity=quantity, entry_cost=budget,
         entry_price=price, opened_at=now, entry_snapshot_id=sid,
-        peak_price=snapshot.price_usd, last_price=snapshot.price_usd)
+        peak_price=snapshot.price_usd, last_price=snapshot.price_usd, exit_fee_bps=settings.fee_bps)
     return Fill(side="BUY", token=snapshot.token, pair=snapshot.pair, snapshot_id=sid,
                 quantity=quantity, price=price, fee=fee, cash_flow=-budget,
                 signal_at=now, simulated_at=now, entry_snapshot_id=sid)
@@ -94,7 +99,7 @@ def sell(wallet: Wallet, snapshot: Snapshot, sid: int, now: datetime, settings: 
     p = wallet.positions[snapshot.token]
     if p.pair != snapshot.pair:
         raise CannotFill("pair_mismatch")
-    if p.quantity * snapshot.price_usd > snapshot.liquidity_usd * settings.max_pool_fraction:
+    if p.quantity * snapshot.price_usd > trade_liquidity_usd(snapshot) * settings.max_pool_fraction:
         raise CannotFill("exit_liquidity_too_low")
     price = snapshot.price_usd * (1 - settings.slippage_bps / 10000)
     gross = p.quantity * price

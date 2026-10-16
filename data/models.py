@@ -100,6 +100,8 @@ class Position(Model):
     peak_price: Decimal = Field(gt=0)
     last_price: Decimal = Field(gt=0)
     failed_exit_fees: Decimal = Field(default=Decimal(0), ge=0, exclude_if=lambda v: v == 0)
+    # Last measured pool fee for valuation; absent on positions opened before R3.
+    exit_fee_bps: Decimal | None = Field(default=None, ge=0, le=10000, exclude_if=lambda v: v is None)
 
 
 class Wallet(Model):

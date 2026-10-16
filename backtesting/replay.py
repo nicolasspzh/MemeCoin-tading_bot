@@ -16,6 +16,7 @@ from config.settings import Settings
 from data.models import Snapshot, Wallet
 from trading.execution import Execution, attempt, failure_draw, valuation_settings
 from trading.paper_wallet import equity, mark
+from trading.risk import trade_liquidity_usd
 from trading.strategy import decide
 
 
@@ -272,8 +273,9 @@ class Replay:
                 reasons.append("missing_terminal_price")
             if quote is None or (end - quote.received_at).total_seconds() > self.settings.max_quote_age_seconds:
                 reasons.append("stale_terminal_quote")
-            if quote is None or not quote.liquidity_usd or (quote.price_usd is not None
-                    and position.quantity * quote.price_usd > quote.liquidity_usd * self.settings.max_pool_fraction):
+            liquidity = trade_liquidity_usd(quote) if quote is not None else None
+            if not liquidity or (quote.price_usd is not None
+                    and position.quantity * quote.price_usd > liquidity * self.settings.max_pool_fraction):
                 reasons.append("insufficient_terminal_liquidity")
             unresolved.append({"token": position.token, "quantity": str(position.quantity),
                                "mark_price_usd": str(position.last_price), "valuation_warnings": reasons})

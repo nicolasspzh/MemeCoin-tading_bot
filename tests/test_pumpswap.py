@@ -198,3 +198,43 @@ async def test_verification_reads_fee_account_in_same_batch(fixture):
                                 fixture["result"]["context"]["slot"])
     assert [m for m, _ in rpc.calls] == ["getAccountInfo", "getMultipleAccounts"]
     assert PUMP_FEE_CONFIG in rpc.calls[1][1][0] and "known_fee_bps" in h.pool_details
+
+
+def test_measured_pumpswap_fee_replaces_fixed_assumption(fixture, quote):
+    from trading.risk import pool_fee_bps
+    h = assess(fixture)
+    s = snapshot_for(quote, fixture, h)
+    assert pool_fee_bps(s, Settings()) == Decimal(53)
+    reasons = risk_reasons(s, h.checked_at, Settings())
+    assert not {"pool_fee_above_limit", "unknown_pool_fees", "pumpswap_dynamic_fees_unverified"} & set(reasons)
+    assert "pool_fee_above_limit" in risk_reasons(s, h.checked_at, Settings(max_pool_fee_bps=Decimal(50)))
+    # Without the fee account the fee is unknown and never falls back to the fixed 0.3 %.
+    fx = copy.deepcopy(fixture); fx["keys"] = fx["keys"][:-1]; fx["result"]["value"] = fx["result"]["value"][:-1]
+    unknown = snapshot_for(quote, fx, assess(fx))
+    assert pool_fee_bps(unknown, Settings()) is None
+    assert "unknown_pool_fees" in risk_reasons(unknown, unknown.received_at, Settings())
+
+
+def test_trade_liquidity_is_the_lower_of_dex_and_onchain(fixture, quote):
+    from trading.risk import trade_liquidity_usd
+    h = assess(fixture)
+    s = snapshot_for(quote, fixture, h)
+    onchain = onchain_liquidity_usd(s, h)
+    s.liquidity_usd = onchain * 3
+    assert trade_liquidity_usd(s) == onchain
+    s.liquidity_usd = onchain / 2
+    assert trade_liquidity_usd(s) == onchain / 2
+
+
+def test_adverse_move_limit_is_three_percent(quote):
+    from data.models import Wallet
+    from trading.execution import Execution, attempt
+    assert Execution().max_adverse_move_bps == Settings().paper_max_adverse_move_bps == Decimal(300)
+    s = quote()
+    order = {"id": 1, "token": s.token, "action": "BUY", "budget_usd": "2", "signal_at": s.received_at.isoformat(),
+             "signal_snapshot_id": 1}
+    run = lambda signal: attempt(Wallet(), {**order, "signal_price_usd": signal}, s, 2, s.received_at, Settings(),
+                                 Execution(failure_probability=0), Decimal(1))
+    assert run("0.98").status == "filled"        # +2.0 % since the signal
+    late = run("0.96")                            # +4.2 % since the signal
+    assert late.status == "failed" and late.reason == "price_moved_beyond_limit"

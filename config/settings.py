@@ -41,13 +41,15 @@ class Settings(BaseModel):
     max_creator_observed_fraction: Decimal = Field(default=Decimal("0.10"), gt=0, le=1)
     min_lp_nonredeemable_fraction: Decimal = Field(default=Decimal("0.90"), ge=0, le=1)
     fee_bps: Decimal = Field(default=Decimal("30"), ge=0, le=1000)
+    # Verified pools charge their measured fee; fee_bps applies to unverified data only.
+    max_pool_fee_bps: Decimal = Field(default=Decimal("200"), ge=0, le=1000)
     slippage_bps: Decimal = Field(default=Decimal("100"), ge=0, lt=10000)
     fixed_fee_usd: Decimal = Field(default=Decimal("0.02"), ge=0)
     paper_latency_seconds: float = Field(default=1, ge=0, le=300)
     paper_order_ttl_seconds: float = Field(default=120, gt=0, le=3600)
     paper_priority_fee_usd: Decimal = Field(default=Decimal("0.005"), ge=0)
     paper_failure_probability: float = Field(default=0.02, ge=0, le=1)
-    paper_max_adverse_move_bps: Decimal = Field(default=Decimal("1000"), ge=0, le=10000)
+    paper_max_adverse_move_bps: Decimal = Field(default=Decimal("300"), ge=0, le=10000)
     paper_seed: int = 7
     position_fraction: Decimal = Field(default=Decimal("0.05"), gt=0, le=Decimal("0.10"))
     max_positions: int = Field(default=3, ge=1, le=10)

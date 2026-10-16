@@ -9,6 +9,7 @@ from data.database import Database
 from data.models import Decision, Snapshot, Wallet, utcnow
 from trading.execution import Execution, attempt, book_value, failure_draw, ledger_entry, valuation_settings
 from trading.paper_wallet import equity, mark
+from trading.risk import trade_liquidity_usd
 from trading.strategy import decide
 
 log = logging.getLogger(__name__)
@@ -158,8 +159,9 @@ class Engine:
                 reasons.append("missing_latest_price")
             if latest is None or not 0 <= (now - latest.received_at).total_seconds() <= settings.max_quote_age_seconds:
                 reasons.append("stale_or_future_quote")
-            if latest is None or not latest.liquidity_usd or (latest.price_usd is not None
-                    and position.quantity * latest.price_usd > latest.liquidity_usd * settings.max_pool_fraction):
+            liquidity = trade_liquidity_usd(latest) if latest is not None else None
+            if not liquidity or (latest.price_usd is not None
+                    and position.quantity * latest.price_usd > liquidity * settings.max_pool_fraction):
                 reasons.append("insufficient_exit_liquidity")
             if reasons:
                 valuation_warnings.append({"token": position.token, "pair": position.pair, "reasons": reasons})
