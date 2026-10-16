@@ -254,6 +254,12 @@ desselben Pools zurückgreifen, höchstens 900 Sekunden alt
 Offen für das Protokoll: ob Verkäufe eine grössere Kursbewegung als 3 %
 zulassen sollen.
 
+**Stufe D vorbereitet (16.10.).** Anleitung, Paket und Erfolgsgrenzen in
+[`R3-STUFE-D-ANLEITUNG.md`](R3-STUFE-D-ANLEITUNG.md): 8 Stunden Sammeln mit
+den R2-Einstellungen plus Vorfilter, getrennt von R2, ohne Orders. Neu dafür:
+Profil `r3-probe` in `operations/service.py`, Installationsskript
+`deploy/probe_r3.sh`, Bericht `deploy/probe_report.py`.
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |

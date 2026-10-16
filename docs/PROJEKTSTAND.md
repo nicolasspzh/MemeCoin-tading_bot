@@ -132,7 +132,8 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
    [R3-STUFE-C-DIAGNOSE.md](R3-STUFE-C-DIAGNOSE.md)).
 4. Blockierte Verkäufe aus Stufe C sind behoben (Rückgriff auf die letzte
    vollständige Prüfung). Als Nächstes: Probelauf des Sammlers mit Vorfilter
-   (Stufe D), dann ein neues Protokoll mit zukünftigem Testfenster festlegen.
+   (Stufe D, Anleitung in [R3-STUFE-D-ANLEITUNG.md](R3-STUFE-D-ANLEITUNG.md)),
+   dann ein neues Protokoll mit zukünftigem Testfenster festlegen.
 5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
    entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
 
