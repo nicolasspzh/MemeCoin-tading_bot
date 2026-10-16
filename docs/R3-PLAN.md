@@ -63,6 +63,10 @@ Bonding Curve).
   - Pool-Typ Raydium CPMM oder PumpSwap
   - Gegenwährung wSOL oder USDC
   - Liquidität mindestens 10'000 USD
+- Die Liquidität von DEX Screener dient nur der Vorauswahl. Bei PumpSwap
+  überschätzt sie die echte Liquidität im Median um rund 50 %
+  (siehe [Stufe A](R3-STUFE-A-PUMPSWAP.md)). Die Einstiegsprüfung misst die
+  echte Liquidität on-chain.
 - Unter den geeigneten Kandidaten gilt weiter die Entdeckungsreihenfolge.
   Es wird nur Wissen vom Aufnahmezeitpunkt verwendet, keine späteren Kurse.
 - Abgelehnte Kandidaten werden mit Grund gespeichert, damit die Auswahl
@@ -95,14 +99,18 @@ Marktkapitalisierung ab: 1,25 % bis 0,30 % pro Trade.
   Staffel werden im Code dokumentiert.
 - Erst freigeben, wenn ein Feld verstanden ist. Bis dahin bleibt es eine Sperre.
 
-**Offen, vor der Umsetzung zu klären:**
+**Stufe A erledigt am 16. Oktober**, Ergebnisse in
+[R3-STUFE-A-PUMPSWAP.md](R3-STUFE-A-PUMPSWAP.md):
 
-- Was `virtual_quote_reserves` bedeutet. Das Feld war in allen PumpSwap-Zeilen
-  ungleich null. Vermutlich hängt es mit den Rückkäufen nach der Migration
-  zusammen (BOOST mode). Das ist nicht belegt und muss im offiziellen SDK
-  oder der Doku geprüft werden.
-- Wie Cashback-Coins, Mayhem mode und Holder Rewards die Gebühr ändern.
-- Layout des Gebührenkontos im Fee-Programm.
+- `virtual_quote_reserves` ist Buchhaltung für wartende Gebühren und
+  Boost-Reserven, keine Sperre nötig. Echte Liquidität = Tresor minus
+  wartende Gebühren.
+- Gebühren sind aus dem on-chain Gebührenkonto vollständig bestimmbar; es
+  wird im selben Abfrageaufruf mitgelesen.
+- Holder Rewards erlauben; Cashback, Mayhem und veränderbare Creator-Gebühr
+  bleiben gesperrt.
+- Neu: Bei PumpSwap erst ab 10 Minuten Poolalter einsteigen, wegen der
+  Rückkäufe nach der Migration (BOOST).
 
 ### 3. Neue Konzentrationsmessung
 
