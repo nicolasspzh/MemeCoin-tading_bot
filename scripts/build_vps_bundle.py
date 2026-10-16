@@ -10,7 +10,7 @@ import tarfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(output):
+def build(output, protocol=True):
     files = {name: (ROOT / name).read_bytes() for name in
              ("README.md", "requirements.txt", "pyproject.toml", "main.py", ".env.example", ".gitignore")}
     for folder in ("backtesting", "collectors", "config", "data", "trading", "operations", "tests"):
@@ -21,10 +21,11 @@ def build(output):
         for path in (ROOT / folder).glob(pattern):
             files[path.relative_to(ROOT).as_posix()] = path.read_bytes()
     release = ROOT / 'deploy/release.json'
-    protocol = (str(Path(json.loads(release.read_text())['protocol']).parent) + '/'
-                if release.exists() else 'runtime/backtests/phase6-protocol-20261007/')
-    for name in ("protocol.json", "development.sqlite3"):
-        files[protocol + name] = (ROOT / protocol / name).read_bytes()
+    folder = (str(Path(json.loads(release.read_text())['protocol']).parent) + '/'
+              if release.exists() else 'runtime/backtests/phase6-protocol-20261007/')
+    # A probe without test character carries no frozen protocol.
+    for name in ("protocol.json", "development.sqlite3") if protocol else ():
+        files[folder + name] = (ROOT / folder / name).read_bytes()
     # Compare actual configured secret values without putting any in output.
     from config.settings import load_settings
     from urllib.parse import parse_qs, urlsplit
@@ -50,5 +51,6 @@ def build(output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--no-protocol", action="store_true", help="Probe bundle without a frozen protocol")
     args = parser.parse_args()
-    print(json.dumps(build(args.out.resolve()), indent=2))
+    print(json.dumps(build(args.out.resolve(), protocol=not args.no_protocol), indent=2))

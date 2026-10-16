@@ -101,3 +101,21 @@ def test_bad_or_multiline_secrets_never_write_a_file(tmp_path, value):
     with pytest.raises(ValueError):
         write_env(path, value)
     assert not path.exists()
+
+
+def test_probe_profile_switches_on_only_the_prefilter(tmp_path, monkeypatch):
+    monkeypatch.setattr(service, "load_settings", lambda: Settings())
+    r2, probe = service.collection_settings(), service.collection_settings("r3-probe")
+    assert not r2.admission_prefilter and probe.admission_prefilter
+    assert {k for k, v in probe.model_dump().items() if r2.model_dump()[k] != v} == {"admission_prefilter"}
+    directory = tmp_path / "campaign"
+    until = (utcnow() + timedelta(hours=8)).isoformat()
+    def supervise(path, fd):
+        os.close(fd)
+        campaign.atomic_json(path / "state.json", {"status": "stopped_by_request"})
+    monkeypatch.setattr(service, "supervise", supervise)
+    assert service.run(directory, until, "r3-probe") == 0
+    manifest = campaign.load_manifest(directory)
+    assert manifest["profile"] == "r3-probe" and manifest["settings"]["admission_prefilter"] is True
+    with pytest.raises(ValueError, match="profile differs"):
+        service.run(directory, until)
