@@ -17,9 +17,10 @@ die grossen lagen fast alle auf dem gesperrten PumpSwap; und die
 Top-10-Konzentrationsregel war in keiner einzigen vollständigen Prüfung
 bestehbar. Die R2-Daten gelten ab jetzt als Entwicklungsdaten.
 
-Telegram-Monitor des Sammlers: Abschaltung am 16. Oktober angeleitet
-(`systemctl disable --now memecoin-telegram.timer`); die Bestätigung vom
-Betreiber steht noch aus. Auf dem VPS wurde nichts gelöscht.
+Telegram-Monitor des Sammlers: am 16. Oktober abgeschaltet
+(`systemctl disable --now memecoin-telegram.timer`); der Betreiber bestätigte
+`disabled`. Die private Konfiguration mit dem Bot-Token bleibt für einen
+späteren Paper-Monitor erhalten. Auf dem VPS wurde nichts gelöscht.
 
 ## Letzter Betriebsstand während R2
 
@@ -121,8 +122,7 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
 
 1. Externe Kopien der finalen Datenbank bestätigen (PC und NAS), erst danach
    über Aufräumen auf dem VPS entscheiden.
-2. VPS absichern: SSH-Anmeldung auf Schlüssel umstellen, Telegram-Timer des
-   Sammlers abgeschaltet lassen.
+2. VPS absichern: SSH-Anmeldung auf Schlüssel umstellen.
 3. R3 entwerfen, auf Basis der Entwicklungsanalyse in
    [R2-ERGEBNIS.md](R2-ERGEBNIS.md) und der
    [Recherche vom 13. Oktober](RECHERCHE-2026-10-13.md): Vorfilter bei der
