@@ -70,19 +70,19 @@ klärt Stufe D.
 | `insufficient_or_unknown_liquidity` | 201'069 | 201'069 |
 | `followup_only_no_new_entry` | 158'056 | 158'056 |
 | `unsupported_pool_program` | 105'708 | 105'708 |
-| `insufficient_onchain_liquidity` (neu) | – | 78'047 |
+| `insufficient_onchain_liquidity` (neu) | gab es nicht | 78'047 |
 | `pumpswap_dynamic_fees_unverified` | 72'037 | 0 |
 | `unsupported_virtual_quote_reserves` | 71'732 | 0 |
 | `high_top10_owner_concentration` | 62'941 | 62'941 |
 | `unsupported_pool_fields` | 62'592 | 0 |
 | `uncertain_top10_owner_concentration` | 42'172 | entfällt |
-| `coarse_holder_sample` (neu) | – | 32'123 |
+| `coarse_holder_sample` (neu) | gab es nicht | 32'123 |
 | `high_creator_observed_balance` | 25'732 | 25'732 |
 | `unsupported_pumpswap_mode` | 13'095 | 285 |
 | `pool_fees_exceed_execution_assumption` | 4'597 | entfällt |
-| `custom_pool_creator_fee` (neu) | – | 3'105 |
-| `pool_fee_above_limit` (neu) | – | 578 |
-| `pumpswap_boost_window` (neu) | – | 89 |
+| `custom_pool_creator_fee` (neu) | gab es nicht | 3'105 |
+| `pool_fee_above_limit` (neu) | gab es nicht | 578 |
+| `pumpswap_boost_window` (neu) | gab es nicht | 89 |
 
 Die PumpSwap-Sperren aus R2 sind weg, weil R3 diese Pools jetzt versteht. Neu
 sperrt die on-chain gemessene Liquidität viele Beobachtungen. Das ist
