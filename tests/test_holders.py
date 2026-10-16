@@ -76,6 +76,8 @@ def assess(b):
 def risk_snapshot(quote, b, holders):
     now = holders.checked_at
     s = quote().model_copy(update={"token": b["token"], "pair": b["pair"], "received_at": now})
+    # 1000 lamports quote reserve priced so that verified two-sided liquidity is USD 20'000.
+    s.raw = {"quoteToken": {"address": SOL}, "priceUsd": "1", "priceNative": "0.0000000001"}
     from datetime import timedelta
     s.pair_created_at = now - timedelta(minutes=10)
     s.mint_risk = MintRisk(checked_at=now, supported_program=True, mint_authority=False, freeze_authority=False,
@@ -207,7 +209,9 @@ def test_real_pool_vault_and_lp_account_fixtures(file, program):
     assert h.pool_program == program and h.status == "complete"
     assert h.lp_nonredeemable_fraction == 1
     if program == PUMP_PROGRAM:
-        assert "unsupported_virtual_quote_reserves" in h.reasons
+        # Fixture of 7 October: boosted canonical pool, fee account not part of that batch.
+        assert h.pool_details["canonical"] is True and int(h.pool_details["boost_reserves"]) > 0
+        assert "unsupported_virtual_quote_reserves" not in h.reasons
         assert "pumpswap_dynamic_fees_unverified" in h.reasons
 
 

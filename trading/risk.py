@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from config.settings import Settings
+from collectors.holders import PUMP_PROGRAM, USDC_MINT, WSOL_MINT
 from collectors.mint import TOKEN_2022_PROGRAM
 from data.models import HolderRisk, Snapshot
 
@@ -27,6 +28,30 @@ def unobserved_account_bound(holders: HolderRisk) -> Decimal | None:
     if unobserved == 0 or len(amounts) < LARGEST_ACCOUNTS_LIMIT - 1:
         return Decimal(0)
     return Decimal(min(min(amounts), unobserved)) / supply
+
+
+QUOTE_DECIMALS = {WSOL_MINT: 9, USDC_MINT: 6}
+
+
+def onchain_liquidity_usd(snapshot: Snapshot, holders: HolderRisk) -> Decimal | None:
+    """Two-sided USD value of the verified quote reserve after waiting fees.
+
+    DEX Screener overstated real PumpSwap liquidity in R2 (median 1.5x), so the
+    entry floor uses the same-slot vault balance. Quote price: priceUsd/priceNative.
+    """
+    details = holders.pool_details
+    try:
+        mints, reserves = details["mints"], details["raw_vault_reserves_after_fees"]
+        quote_index = 1 - mints.index(snapshot.token)
+        quote_mint = mints[quote_index]
+        raw = snapshot.raw
+        if (raw.get("quoteToken") or {}).get("address") != quote_mint or quote_mint not in QUOTE_DECIMALS:
+            return None
+        quote_usd = Decimal(str(raw["priceUsd"])) / Decimal(str(raw["priceNative"]))
+        value = 2 * Decimal(int(reserves[quote_index])) / 10 ** QUOTE_DECIMALS[quote_mint] * quote_usd
+    except (KeyError, ValueError, TypeError, IndexError, ArithmeticError):
+        return None
+    return value if value.is_finite() and value >= 0 else None
 
 
 def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry: bool = True) -> list[str]:
@@ -84,6 +109,11 @@ def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry
                     elif unobserved > settings.max_unobserved_account_fraction:
                         reasons.append("coarse_holder_sample")
                 if holders.status == "complete":
+                    liquidity = onchain_liquidity_usd(snapshot, holders)
+                    if liquidity is None:
+                        reasons.append("unknown_onchain_liquidity")
+                    elif liquidity < settings.min_liquidity_usd:
+                        reasons.append("insufficient_onchain_liquidity")
                     if holders.lp_nonredeemable_fraction is None or holders.lp_nonredeemable_fraction < settings.min_lp_nonredeemable_fraction:
                         reasons.append("insufficient_verified_lp_nonredeemable_fraction")
                     if holders.creator_observed_fraction is None:
@@ -110,6 +140,10 @@ def risk_reasons(snapshot: Snapshot, now: datetime, settings: Settings, *, entry
             reasons.append("unknown_pair_age")
         elif not settings.min_age_seconds <= (now - snapshot.pair_created_at).total_seconds() <= settings.max_age_seconds:
             reasons.append("pair_age_outside_entry_window")
+        elif (risk is not None and risk.holder_risk is not None and risk.holder_risk.pool_program == PUMP_PROGRAM
+              and (now - snapshot.pair_created_at).total_seconds() < settings.min_pumpswap_age_seconds):
+            # Post-migration boost buybacks create buy pressure that is not market demand.
+            reasons.append("pumpswap_boost_window")
         if snapshot.volume_5m_usd is None or snapshot.volume_5m_usd < settings.min_volume_5m_usd:
             reasons.append("insufficient_or_unknown_volume")
         if snapshot.buys_5m is None or snapshot.sells_5m is None:

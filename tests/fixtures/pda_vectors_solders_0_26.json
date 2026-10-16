@@ -1,0 +1,92 @@
+[
+ {
+  "seeds_hex": [
+   "6665655f636f6e666967",
+   "0c14defc825ec67694250818bb654065f4298d3156d571b4d4f8090c18e9a863"
+  ],
+  "program": "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ",
+  "address": "5PHirr8joyTMp9JMm6nW7hNDVyEYdkzDqazxPD7RaTjx",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "c2acc61a12830717e531d7422f44ad319f610e81a431c2f582c40166966d8daf"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "GSiR9AzScZrGreiGwYAwu2fBpSW2JK6U4bHNMHuoU3uv",
+  "bump": 254
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0101010101010101010101010101010101010101010101010101010101010101"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "BSjQRkMYSR4M94Sax7hgXkrFLhL1z94tyyucAhA9XqvY",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0202020202020202020202020202020202020202020202020202020202020202"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "7XDXDhgws8PERjXeANFnnR2mGrJD1WxDe13vsvSwWnFf",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0303030303030303030303030303030303030303030303030303030303030303"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "CkbXQ7Uh8o1bYaKbZ9JWntykUQqpnqe9YwfjahcJjVeA",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0404040404040404040404040404040404040404040404040404040404040404"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "HXrACMMq2SqeXXa4h1FYzAd3FRmGDZKmByw3BgYrFWGD",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0505050505050505050505050505050505050505050505050505050505050505"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "5pfr6UWoLqvp7RCaswGjPdqrhUAPgFLaPS2XsLSSWyuf",
+  "bump": 254
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0606060606060606060606060606060606060606060606060606060606060606"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "HjWSVpSuJD2bxNVzsXYTqAjhqCxcj6BnXHA4zgxrH1ii",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0707070707070707070707070707070707070707070707070707070707070707"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "77YHk3LDDeRXVARSiXcKwyHS2VNwyn9HjH3o53axzDhT",
+  "bump": 255
+ },
+ {
+  "seeds_hex": [
+   "706f6f6c2d617574686f72697479",
+   "0808080808080808080808080808080808080808080808080808080808080808"
+  ],
+  "program": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+  "address": "Dk99e6TgoignP5uHUHMegmA85fwPR6QryzgDTfhEaeZY",
+  "bump": 255
+ }
+]

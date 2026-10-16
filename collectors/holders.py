@@ -19,7 +19,97 @@ from data.models import HolderAccount, HolderRisk, utcnow
 
 PUMP_PROGRAM = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
 PUMP_CONFIG = "ADyA8hdefvWN2dbGGWFotbzWxrAvLW83WG6QCVXvJKqw"
+# Source: pump-fun/pump-public-docs (commit 639b87f) and pump-swap-sdk 2.1.0, see
+# docs/R3-STUFE-A-PUMPSWAP.md. The fee config is PDA ["fee_config", PUMP_PROGRAM].
+PUMP_FUN_PROGRAM = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+PUMP_FEE_PROGRAM = "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"
+PUMP_FEE_CONFIG = "5PHirr8joyTMp9JMm6nW7hNDVyEYdkzDqazxPD7RaTjx"
+PUMP_POOL_SIZE = 287
+WSOL_MINT = "So11111111111111111111111111111111111111112"
+USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 TOKEN_PROGRAMS = {TOKEN_PROGRAM, TOKEN_2022_PROGRAM}
+
+_P = 2**255 - 19
+_D = -121665 * pow(121666, _P - 2, _P) % _P
+
+
+def on_curve(raw: bytes) -> bool:
+    """Whether 32 bytes decompress to an ed25519 point; PDAs must not."""
+    y = int.from_bytes(raw, "little") & ((1 << 255) - 1)
+    if y >= _P:
+        return False
+    y2 = y * y % _P
+    u, v = (y2 - 1) % _P, (_D * y2 + 1) % _P
+    x = pow(u * pow(v, _P - 2, _P) % _P, (_P + 3) // 8, _P)
+    return (v * x * x - u) % _P == 0 or (v * x * x + u) % _P == 0
+
+
+def program_address(seeds: list[bytes], program: str) -> tuple[str, int]:
+    """Solana find_program_address: highest bump whose hash is off the curve."""
+    for bump in range(255, -1, -1):
+        digest = hashlib.sha256(b"".join(seeds) + bytes([bump]) + address_bytes(program)
+                                + b"ProgramDerivedAddress").digest()
+        if not on_curve(digest):
+            return encode58(digest), bump
+    raise DataUnavailable("No program address")
+
+
+def fee_config(account) -> dict:
+    """Decode pump-fees FeeConfig: flat fees, SOL tiers, stable tiers, exotic flat fees."""
+    if not isinstance(account, dict) or account.get("owner") != PUMP_FEE_PROGRAM:
+        raise DataUnavailable("PumpSwap fee configuration owner mismatch")
+    raw = account_bytes(account)
+    if raw[:8] != bytes([143, 52, 146, 187, 219, 123, 76, 155]):
+        raise DataUnavailable("Unsupported PumpSwap fee configuration layout")
+    offset = 8 + 1 + 32
+    try:
+        def fees():
+            nonlocal offset
+            values = struct.unpack_from("<QQQ", raw, offset)
+            offset += 24
+            if sum(values) > 10000:
+                raise ValueError
+            return values
+
+        def tiers():
+            nonlocal offset
+            count = struct.unpack_from("<I", raw, offset)[0]
+            offset += 4
+            if count > 64:
+                raise ValueError
+            result = []
+            for _ in range(count):
+                low, high = struct.unpack_from("<QQ", raw, offset)
+                offset += 16
+                result.append(((high << 64) | low, fees()))
+            if any(a[0] >= b[0] for a, b in zip(result, result[1:])):
+                raise ValueError
+            return result
+
+        flat, sol = fees(), tiers()
+        # Fields appended later decode as empty/zero on older accounts.
+        stable = tiers() if len(raw) - offset >= 4 else []
+        exotic = fees() if len(raw) - offset >= 24 else (0, 0, 0)
+    except (struct.error, ValueError):
+        raise DataUnavailable("Malformed PumpSwap fee configuration") from None
+    if not sol:
+        raise DataUnavailable("PumpSwap fee tiers missing")
+    return {"flat": flat, "tiers": sol, "stable": stable, "exotic": exotic}
+
+
+def pump_fee(config: dict, *, canonical: bool, quote_mint: str, market_cap: int) -> tuple[tuple, str]:
+    """pump-fees FeeConfig::fees_for_quote_mint() and calculate_fee_tier()."""
+    if not canonical:
+        return config["flat"], "flat"
+    if quote_mint == WSOL_MINT:
+        tiers, schedule = config["tiers"], "tiers"
+    elif quote_mint == USDC_MINT:
+        tiers, schedule = config["stable"] or config["tiers"], "stable_tiers"
+    else:
+        return (config["flat"], "flat") if not any(config["exotic"]) else (config["exotic"], "exotic_flat")
+    if market_cap < tiers[0][0]:
+        return tiers[0][1], schedule
+    return next(fees for threshold, fees in reversed(tiers) if market_cap >= threshold), schedule
 
 
 def encode58(raw: bytes) -> str:
@@ -79,26 +169,37 @@ def pool_state(account, pair):
         raise DataUnavailable("Unsupported PumpSwap pool layout")
     # Official Pump docs specify absent trailing fields as zero. Truncated fields
     # and unknown nonzero tails never authorize entry.
-    for start, end in ((245, 261), (261, 269)):
+    for start, end in ((245, 261), (261, 269), (271, 279), (279, 287)):
         if start < len(raw) < end:
             raise DataUnavailable("Truncated PumpSwap pool field")
-    padded = raw + bytes(max(0, 271 - len(raw)))
+    padded = raw + bytes(max(0, PUMP_POOL_SIZE - len(raw)))
     if any(padded[i] not in (0, 1) for i in (243, 244, 269, 270)):
         raise DataUnavailable("Invalid PumpSwap pool flags")
-    if padded[243] or padded[244] or padded[269] or padded[270]:
+    # Mayhem fees are undocumented, cashback is deprecated, the editable creator fee
+    # flag is reserved. Holder rewards only redirect the creator fee: trading unchanged.
+    if padded[243] or padded[244] or padded[269]:
         reasons.append("unsupported_pumpswap_mode")
-    if int.from_bytes(padded[245:261], "little", signed=True) != 0:
-        reasons.append("unsupported_virtual_quote_reserves")
-    if any(padded[261:269]) or any(raw[271:]):
+    creator_fee_bps = struct.unpack_from("<Q", padded, 261)[0]
+    if creator_fee_bps:
+        reasons.append("custom_pool_creator_fee")  # documented for non SOL/USDC pairs only
+    if any(raw[PUMP_POOL_SIZE:]):
         reasons.append("unsupported_pool_fields")
     expected = hashlib.sha256(b"pool" + raw[9:11] + raw[11:43] + raw[43:75] + raw[75:107]
                               + raw[8:9] + address_bytes(program) + b"ProgramDerivedAddress").digest()
     if encode58(expected) != pair:
         raise DataUnavailable("PumpSwap pool address does not match seeds")
+    # Signed i128: waiting fees are subtracted, boost reserves added. Price uses
+    # vault + virtual reserves; only vault - waiting fees is liquidity.
+    virtual = int.from_bytes(padded[245:261], "little", signed=True)
+    protocol_fees, creator_fees = struct.unpack_from("<QQ", padded, 271)
+    canonical = program_address([b"pool-authority", raw[43:75]], PUMP_FUN_PROGRAM)[0] == key(11)
     return {"program": program, "pair": pair, "config": PUMP_CONFIG, "creator": key(11),
             "protocol_coin_creator": key(211), "vaults": [key(139), key(171)], "lp_mint": key(107),
             "mints": [key(43), key(75)], "authority": pair,
             "tracked_lp_supply": struct.unpack_from("<Q", raw, 203)[0],
+            "accrued_vault_fees": [0, protocol_fees + creator_fees],
+            "virtual_quote_reserves": str(virtual), "boost_reserves": str(virtual + protocol_fees + creator_fees),
+            "canonical": canonical, "holder_reward": bool(padded[270]), "creator_fee_bps": creator_fee_bps,
             "open_time": 0, "reasons": reasons}
 
 
@@ -212,9 +313,23 @@ def assess_bundle(token, pair, addresses, result, expected_pool, sampled_address
             raise DataUnavailable("Unsupported PumpSwap config layout")
         if raw_config[56] & 24:
             reasons.append("pool_swaps_disabled")
-        # PumpSwap also has dynamic fee configuration; fixed execution costs do
-        # not yet model it. Pool recognition must not silently authorize a swap.
-        reasons.append("pumpswap_dynamic_fees_unverified")
+        # Fees come from pump-fees FeeConfig by market cap on effective quote reserves.
+        # Without a decodable fee account, recognition must not authorize a swap.
+        try:
+            if token_index != 0:
+                raise DataUnavailable("Token is not the PumpSwap base mint")
+            config_fees = fee_config(accounts.get(PUMP_FEE_CONFIG))
+            effective_quote = vaults[1]["amount"] + int(pool["virtual_quote_reserves"])
+            if vaults[0]["amount"] <= 0 or effective_quote < 0:
+                raise DataUnavailable("Empty PumpSwap reserves")
+            market_cap = effective_quote * int(mint["raw_supply"]) // vaults[0]["amount"]
+            fees, schedule = pump_fee(config_fees, canonical=pool["canonical"],
+                                      quote_mint=pool["mints"][1], market_cap=market_cap)
+            pool.update(known_fee_bps=str(sum(fees)), fee_schedule=schedule,
+                        fee_bps_parts={"lp": fees[0], "protocol": fees[1], "creator": fees[2]},
+                        market_cap_quote_raw=str(market_cap))
+        except DataUnavailable:
+            reasons.append("pumpswap_dynamic_fees_unverified")
     lp = accounts[pool["lp_mint"]]
     lp_raw = account_bytes(lp)
     lp_values = decode_mint(lp, pool["lp_mint"])
@@ -271,7 +386,8 @@ async def verify_holders(rpc, token, pair, sampled_addresses, sample_slot):
                           reasons=["unsupported_pool_program"]), None
     if token not in pool["mints"]:
         raise DataUnavailable("Pool does not contain requested mint")
-    keys = list(dict.fromkeys([token, pair, *sampled_addresses, *pool["vaults"], pool["lp_mint"], pool["config"]]))
+    extra = [PUMP_FEE_CONFIG] if pool["program"] == PUMP_PROGRAM else []
+    keys = list(dict.fromkeys([token, pair, *sampled_addresses, *pool["vaults"], pool["lp_mint"], pool["config"], *extra]))
     result = await rpc.rpc("getMultipleAccounts", [keys, {"encoding": "base64", "commitment": "confirmed",
                                                          "minContextSlot": max(pool_slot, sample_slot)}])
     if not max(pool_slot, sample_slot) <= context_slot(result) <= sample_slot + 150:

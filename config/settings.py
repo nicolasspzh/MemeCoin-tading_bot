@@ -53,6 +53,7 @@ class Settings(BaseModel):
     max_positions: int = Field(default=3, ge=1, le=10)
     max_quote_age_seconds: int = Field(default=120, ge=1)
     min_age_seconds: int = Field(default=60, ge=0)
+    min_pumpswap_age_seconds: int = Field(default=600, ge=0)
     max_age_seconds: int = Field(default=86400, ge=60)
     max_position_seconds: int = Field(default=900, ge=30)
     stop_loss_fraction: Decimal = Field(default=Decimal("0.12"), gt=0, lt=1)

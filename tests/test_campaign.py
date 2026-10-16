@@ -27,14 +27,20 @@ def directory(tmp_path):
 
 @pytest.fixture
 def market_quote(quote):
+    wsol = "So11111111111111111111111111111111111111112"
+
     def make(*args, **kwargs):
+        # 100 SOL quote reserve at USD 100 per SOL: USD 20'000 verified two-sided liquidity.
+        kwargs.setdefault("raw", {"quoteToken": {"address": wsol}, "priceUsd": "1", "priceNative": "0.01"})
         snapshot = quote(*args, source="dexscreener", **kwargs)
         snapshot.mint_risk.risk_version = 3
         snapshot.mint_risk.holder_risk = HolderRisk(
             token=snapshot.token, pair=snapshot.pair, checked_at=snapshot.received_at,
             slot=1, pool_program="test-program", status="complete",
             top10_owner_fraction_lower=Decimal(".25"), top10_owner_fraction_upper=Decimal(".25"),
-            creator_observed_fraction=Decimal(0), lp_nonredeemable_fraction=Decimal(1))
+            creator_observed_fraction=Decimal(0), lp_nonredeemable_fraction=Decimal(1),
+            pool_details={"mints": [snapshot.token, wsol],
+                          "raw_vault_reserves_after_fees": ["1000000", "100000000000"]})
         return snapshot
     return make
 

@@ -190,7 +190,7 @@ nachrechnen will, verwendet den eingefrorenen Code unter
 | Punkt | Stand | Prüfung |
 | --- | --- | --- |
 | 3. Konzentrationsmessung | umgesetzt am 16.10. (`trading/risk.py`, Einstellung `max_unobserved_account_fraction`) | 3 neue Tests; R2-Zählung: 72 Coins bestehen (71 PumpSwap, 1 Raydium CPMM), vorher 0 |
-| 2. PumpSwap | offen | |
+| 2. PumpSwap | umgesetzt am 16.10. (`collectors/holders.py`, `trading/risk.py`, Einstellung `min_pumpswap_age_seconds`) | 18 neue Tests in `tests/test_pumpswap.py`, u. a. PDA-Vergleich mit solders 0.26.0 und echtes Gebührenkonto vom 08.09. |
 | 4. Kosten je Pool | offen | |
 | 1. Vorfilter | offen | |
 | 5. Gegenwährung früh | offen | |
@@ -201,6 +201,20 @@ höchstens 60 % beträgt **und** kein unbeobachtetes Konto mehr als 1 % halten
 kann. Neue Sperrgründe: `coarse_holder_sample`,
 `unknown_unobserved_account_size`. `uncertain_top10_owner_concentration`
 entfällt.
+
+Umgesetzt für PumpSwap: aktuelles Pool-Layout (287 Bytes, Zusatzbytes müssen
+0 sein), `virtual_quote_reserves` mit Vorzeichen, echte Reserven nach
+wartenden Gebühren, Erkennung kanonischer Pools über die PDA
+`["pool-authority", mint]`, Gebühr aus dem Gebührenkonto (im selben
+`getMultipleAccounts`-Aufruf), Holder Rewards erlaubt, Mayhem, Cashback,
+reservierte Felder und eigene Creator-Gebühr gesperrt. Neu für alle
+vollständig geprüften Pools: Liquidität on-chain aus der Quote-Reserve
+(`insufficient_onchain_liquidity`, `unknown_onchain_liquidity`). Neu für
+PumpSwap: Einstieg erst ab 10 Minuten Poolalter (`pumpswap_boost_window`).
+
+Bewusst noch gesperrt: PumpSwap-Pools mit Gebühr über 0,3 % scheitern an
+`pool_fees_exceed_execution_assumption`, bis Punkt 4 die Gebühr je Pool in
+die Kosten übernimmt.
 
 ## Ablauf und Erfolgsbedingungen
 
