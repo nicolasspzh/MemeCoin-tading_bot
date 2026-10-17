@@ -266,6 +266,13 @@ DEX-Grenzen in Ordnung, Halterprüfung ohne Datenfehler. Aber nur 2,8
 geeignete Coins pro Stunde statt 5; 63 % statt 80 % der Aufnahmeabstände
 höchstens 900 Sekunden. Engpass ist die Entdeckung neuer Coins.
 
+**Variante A und Stufe D2 (17.10.).** Zusätzliche DEX-Screener-Listen
+bringen keine brauchbaren Coins (Messung in
+[`R3-STUFE-D-ERGEBNIS.md`](R3-STUFE-D-ERGEBNIS.md)); am Abend lieferten die
+Profile 6,0 geeignete Coins pro Stunde. Neu: Der Vorfilter sperrt Pools über
+24 Stunden oder mit unbekanntem Alter. Zweiter Probelauf über 24 Stunden mit
+unveränderten Grenzen: [`R3-STUFE-D2-ANLEITUNG.md`](R3-STUFE-D2-ANLEITUNG.md).
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |
