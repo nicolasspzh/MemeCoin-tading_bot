@@ -48,7 +48,12 @@ und nicht der Takt. Von 22 geeigneten Coins wurden 20 aufgenommen.
   sind im Bericht keine erfasst.
 - `scheduler:capacity_deferred` erscheint in jeder Runde. Das war in R2
   gleich: Die Meldung zählt wartende Kandidaten und ist kein Fehler.
-- Helius-Credits: noch nicht übermittelt.
+- Helius-Credits nach dem Probelauf: 284'261 von 1'000'000 (Angabe des
+  Betreibers vom 17.10.). Ein Stand direkt vor dem Probelauf fehlt. Der
+  letzte bekannte Stand ist 212'398 vom 13.10. Die Differenz von 71'863
+  enthält die letzten drei Tage von R2 und den Probelauf. Der Anteil des
+  Probelaufs lässt sich daraus nicht bestimmen. Gezählt wurden im Probelauf
+  6'144 RPC-Anfragen.
 
 ## Grenzen
 
