@@ -67,7 +67,7 @@ keine Trades und berechnet keine Rendite.
 | Ergebnis und Analyse von R2 | [R2-Ergebnis](docs/R2-ERGEBNIS.md) |
 | Plan für die nächste Version | [R3-Plan](docs/R3-PLAN.md) |
 | R3-Diagnose auf den R2-Daten | [Stufe C](docs/R3-STUFE-C-DIAGNOSE.md) |
-| R3-Probelauf auf dem VPS | [Stufe D](docs/R3-STUFE-D-ANLEITUNG.md) |
+| R3-Probelauf auf dem VPS | [Anleitung](docs/R3-STUFE-D-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D-ERGEBNIS.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
 | Recherche und Ideen für die nächste Version | [Recherche](docs/RECHERCHE-2026-10-13.md) |
 | Fortschritt auf dem bereits eingerichteten VPS | [Statusbefehl](docs/PROJEKTSTAND.md#auf-dem-vps-bestätigt) |

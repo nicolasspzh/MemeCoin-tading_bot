@@ -1,0 +1,86 @@
+{
+ "admission_interval_seconds": 720,
+ "admission_prefilter": true,
+ "admissions": {
+  "first": "2026-10-17T08:07:15.366638+00:00",
+  "gap_seconds_max": 4320,
+  "gap_seconds_median": 728,
+  "gaps_over_900_seconds": 7,
+  "last": "2026-10-17T14:51:53.830952+00:00",
+  "total": 20
+ },
+ "created_at": "2026-10-17T08:07:12.415699+00:00",
+ "discovered": {
+  "by_source": {
+   "dexscreener-profile": 124,
+   "raydium-cpmm-finalized": 49
+  },
+  "per_hour": 21.6,
+  "total": 173
+ },
+ "fills": 0,
+ "health": {
+  "raydium-cpmm-finalized:bootstrap_boundary": 1,
+  "raydium-cpmm-finalized:signature_page": 242,
+  "raydium-cpmm-finalized:started": 17,
+  "raydium-cpmm-finalized:stopped": 17,
+  "scheduler:capacity_deferred": 1449
+ },
+ "hours_observed": 8.0,
+ "observations": {
+  "entry_check_pass_rows": 505,
+  "entry_check_pass_tokens": 10,
+  "holder_status": {
+   "complete": 5713
+  },
+  "priced": 5713,
+  "top_blockers": {
+   "coarse_holder_sample": 2654,
+   "followup_only_no_new_entry": 3980,
+   "high_creator_observed_balance": 4,
+   "high_top10_owner_concentration": 1598,
+   "insufficient_onchain_liquidity": 2433,
+   "insufficient_or_unknown_liquidity": 2201,
+   "insufficient_or_unknown_volume": 1799,
+   "insufficient_verified_lp_nonredeemable_fraction": 28,
+   "pair_age_outside_entry_window": 4,
+   "pumpswap_boost_window": 134
+  },
+  "total": 5713,
+  "with_data_errors": 0
+ },
+ "orders": 0,
+ "profile": "r3-probe",
+ "rpc_request_budget": {
+  "2026-10-17": 6144
+ },
+ "rpc_requests_per_hour": 768,
+ "screens": {
+  "eligible": 31,
+  "eligible_pool_kinds": {
+   "pumpswap": 31
+  },
+  "eligible_tokens_per_hour": 2.8,
+  "rejection_reasons": {
+   "insufficient_or_unknown_liquidity": 940,
+   "missing_price": 30,
+   "no_dex_pair": 6,
+   "unsupported_dex_pool": 528,
+   "unsupported_quote_mint": 159
+  },
+  "tokens_eligible": 22,
+  "tokens_screened": 147,
+  "total": 1019
+ },
+ "slots": 8,
+ "state": {
+  "backup_error_type": null,
+  "completed_cycles": 1449,
+  "data_degraded": true,
+  "rpc_requests": 6144,
+  "rpc_successes": 6144,
+  "status": "completed_scheduled_window",
+  "worker_launches": 17
+ },
+ "until": "2026-10-17T16:07:11+00:00"
+}

@@ -260,6 +260,12 @@ den R2-Einstellungen plus Vorfilter, getrennt von R2, ohne Orders. Neu dafür:
 Profil `r3-probe` in `operations/service.py`, Installationsskript
 `deploy/probe_r3.sh`, Bericht `deploy/probe_report.py`.
 
+**Stufe D nicht bestanden (17.10.).** Ergebnis in
+[`R3-STUFE-D-ERGEBNIS.md`](R3-STUFE-D-ERGEBNIS.md): Technik, RPC- und
+DEX-Grenzen in Ordnung, Halterprüfung ohne Datenfehler. Aber nur 2,8
+geeignete Coins pro Stunde statt 5; 63 % statt 80 % der Aufnahmeabstände
+höchstens 900 Sekunden. Engpass ist die Entdeckung neuer Coins.
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |
