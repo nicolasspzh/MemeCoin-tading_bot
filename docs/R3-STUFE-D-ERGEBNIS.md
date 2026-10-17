@@ -55,6 +55,40 @@ und nicht der Takt. Von 22 geeigneten Coins wurden 20 aufgenommen.
   Probelaufs lässt sich daraus nicht bestimmen. Gezählt wurden im Probelauf
   6'144 RPC-Anfragen.
 
+## Nachmessung: zusätzliche Listen von DEX Screener (Variante A)
+
+Gemessen in der Cloud am 17.10., 18:13 bis 21:13 Uhr Schweizer Zeit, mit
+`scripts/r3_supply_sampler.py` und `scripts/r3_supply_analyze.py`. Jede
+Minute wurden sechs Listen abgefragt. Neue Coins wurden mit genau den
+Regeln des Vorfilters geprüft, alle 5 Minuten neu, bis 66 Minuten nach der
+Entdeckung. Coins, die beim Start schon in einer Liste standen (96), sind
+nicht mitgezählt. Gezählt wird jeder Coin bei der Liste, in der er zuerst
+auftauchte. Die Messung brauchte keinen Helius-Zugang.
+
+| Liste | Neue Coins | Geeignet | Davon Pool höchstens 24 h |
+| --- | ---: | ---: | ---: |
+| Profile (`token-profiles/latest`) | 61 | 19 (6,4 pro Stunde) | 18 (6,0 pro Stunde) |
+| Boosts (`token-boosts/latest`) | 6 | 4 | 0 |
+| Community Takeovers, Werbung, Profil-Updates, Top-Boosts | 0 | 0 | 0 |
+
+Geeignete Coins mit jungem Pool je Stunde: 6, 7, 5. Alle geeigneten Coins
+liefen über PumpSwap. Fehler bei den Abfragen: keine.
+
+Folgerungen:
+
+- Die zusätzlichen Listen bringen keine brauchbaren Coins. Boosts liefern
+  nur Coins mit Pools über 24 Stunden, für die die Einstiegsprüfung immer
+  sperrt. Die anderen Listen brachten keinen einzigen neuen Coin.
+- Die Profile allein lieferten am Abend 6,0 geeignete Coins mit jungem Pool
+  pro Stunde, im Probelauf am Tag nur 2,8. Das spricht für eine starke
+  Abhängigkeit von der Tageszeit. Das ist eine Folgerung aus zwei kurzen
+  Messungen, kein Beleg.
+- Die Messungen sind nicht ganz vergleichbar: Der Probelauf prüft nur, wenn
+  eine Aufnahme fällig ist, die Cloud-Messung prüft jeden neuen Coin.
+
+Die Unterstützung für weitere Listen bleibt im Code (`discovery_feeds`),
+eingeschaltet sind standardmässig nur die Profile.
+
 ## Grenzen
 
 - 8 Stunden an einem Samstag zwischen 10 und 18 Uhr Schweizer Zeit. Andere
