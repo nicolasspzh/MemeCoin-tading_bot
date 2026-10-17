@@ -236,8 +236,10 @@ async def test_pinned_pool_batch_omission_recovers_without_extra_risk_on_missing
 WSOL = 'So11111111111111111111111111111111111111112'
 
 
-def dex_quote(token, pair, *, dex_id='pumpswap', labels=None, quote_mint=WSOL, liquidity='20000', at=START):
+def dex_quote(token, pair, *, dex_id='pumpswap', labels=None, quote_mint=WSOL, liquidity='20000', at=START,
+              pool_age=timedelta(minutes=10)):
     return Snapshot(token=token, pair=pair, source='dexscreener', received_at=at, price_usd=Decimal('1'),
+                    pair_created_at=at - pool_age if pool_age is not None else None,
                     liquidity_usd=Decimal(liquidity) if liquidity is not None else None,
                     raw={'dexId': dex_id, 'labels': labels, 'quoteToken': {'address': quote_mint}})
 
@@ -251,6 +253,9 @@ def dex_quote(token, pair, *, dex_id='pumpswap', labels=None, quote_mint=WSOL, l
     ({'quote_mint': 'Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg'}, ['unsupported_quote_mint']),
     ({'liquidity': '9999'}, ['insufficient_or_unknown_liquidity']),
     ({'liquidity': None}, ['insufficient_or_unknown_liquidity']),
+    ({'pool_age': timedelta(hours=24)}, []),
+    ({'pool_age': timedelta(hours=24, seconds=1)}, ['pool_older_than_entry_window']),
+    ({'pool_age': None}, ['unknown_pair_age']),
 ])
 def test_admission_prefilter_reasons(kwargs, reasons):
     from collectors.schedule import admission_reasons

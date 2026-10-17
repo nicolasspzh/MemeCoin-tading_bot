@@ -24,7 +24,8 @@ def admission_reasons(snapshot, settings):
     """Admission prefilter on facts known at admission time (DEX quote only).
 
     Pool type and quote asset match what the entry checks can verify; liquidity
-    is only a coarse preselection, entries verify it on-chain.
+    is only a coarse preselection, entries verify it on-chain. A pool already
+    older than the entry window could never be entered and would only hold a slot.
     """
     if snapshot is None:
         return ["no_dex_pair"]
@@ -38,6 +39,10 @@ def admission_reasons(snapshot, settings):
         reasons.append("missing_price")
     if snapshot.liquidity_usd is None or snapshot.liquidity_usd < settings.min_liquidity_usd:
         reasons.append("insufficient_or_unknown_liquidity")
+    if snapshot.pair_created_at is None:
+        reasons.append("unknown_pair_age")
+    elif (snapshot.received_at - snapshot.pair_created_at).total_seconds() > settings.max_age_seconds:
+        reasons.append("pool_older_than_entry_window")
     return reasons
 
 

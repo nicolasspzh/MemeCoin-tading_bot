@@ -13,7 +13,8 @@ WSOL = "So11111111111111111111111111111111111111112"
 
 def dex_quote(token, pair, at, dex_id="pumpswap", liquidity="20000"):
     return Snapshot(token=token, pair=pair, source="dexscreener", received_at=at, price_usd=Decimal("1"),
-                    liquidity_usd=Decimal(liquidity), raw={"dexId": dex_id, "quoteToken": {"address": WSOL}})
+                    pair_created_at=at - timedelta(minutes=10), liquidity_usd=Decimal(liquidity),
+                    raw={"dexId": dex_id, "quoteToken": {"address": WSOL}})
 
 
 def test_probe_report_counts_screens_admissions_and_checks(tmp_path):
@@ -28,7 +29,7 @@ def test_probe_report_counts_screens_admissions_and_checks(tmp_path):
         schedule = ObservationSchedule(db, settings)
         with db.conn:
             for token in ("A", "B", "C"):
-                db.discover(token, start.timestamp(), "test")
+                db.discover(token, start.timestamp() + 5, "test")  # after the manifest was created
         now = start.timestamp() + 10
         schedule.record_screens(now, {"A": dex_quote("A", "A-CURVE", start, dex_id="pumpfun"),
                                       "B": dex_quote("B", "B-SWAP", start), "C": None})
@@ -46,11 +47,14 @@ def test_probe_report_counts_screens_admissions_and_checks(tmp_path):
     assert result["screens"]["tokens_screened"] == 3 and result["screens"]["tokens_eligible"] == 2
     assert result["screens"]["rejection_reasons"] == {"unsupported_dex_pool": 1, "no_dex_pair": 2}
     assert result["admissions"]["total"] == 2 and result["admissions"]["gaps_over_900_seconds"] == 1
+    assert result["admissions"]["gaps"] == 1 and sum(result["admissions"]["by_utc_hour"].values()) == 2
+    assert sum(result["screens"]["eligible_tokens_by_utc_hour"].values()) == 2
+    assert sum(result["discovered"]["by_utc_hour"].values()) == 3
     assert result["orders"] == result["fills"] == 0
     assert result["observations"]["total"] == 2 and result["observations"]["entry_check_pass_rows"] == 0
     assert "missing_onchain_checks" in result["observations"]["top_blockers"]
     text = german(result)
-    assert "3 Coins geprüft, 2 geeignet" in text and "Orders/Ausführungen: 0/0" in text
+    assert "3 Coins geprüft, 2 geeignet" in text and "über 900 s: 1 von 1" in text and "Orders/Ausführungen: 0/0" in text
 
 
 def test_probe_report_before_first_database(tmp_path):

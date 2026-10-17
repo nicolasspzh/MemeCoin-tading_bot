@@ -9,11 +9,11 @@ StartLimitBurst=3
 Type=simple
 User=memecoin-collector
 Group=memecoin-collector
-WorkingDirectory=/opt/memecoin-collector-r3-probe
+WorkingDirectory=/opt/memecoin-collector-r3-probe-@ID@
 EnvironmentFile=/etc/memecoin-collector/collector.env
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
-ExecStart=/opt/memecoin-collector-r3-probe/.venv/bin/python -m operations.service --directory /var/lib/memecoin-collector-r3/probe-d1 --until @UNTIL@ --profile r3-probe
+ExecStart=/opt/memecoin-collector-r3-probe-@ID@/.venv/bin/python -m operations.service --directory /var/lib/memecoin-collector-r3/probe-@ID@ --until @UNTIL@ --profile r3-probe
 Restart=on-failure
 RestartSec=20
 KillMode=mixed

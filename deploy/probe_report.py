@@ -24,6 +24,15 @@ def iso(timestamp):
     return datetime.fromtimestamp(timestamp, UTC).isoformat() if timestamp is not None else None
 
 
+def hour(timestamp):
+    """UTC clock hour; supply may depend on the time of day."""
+    return datetime.fromtimestamp(timestamp, UTC).strftime("%H")
+
+
+def by_hour(timestamps):
+    return dict(sorted(Counter(hour(t) for t in timestamps).items()))
+
+
 def pool_kind(dex_id, labels):
     return f"{dex_id}{'/' + ','.join(labels) if labels else ''}"
 
@@ -48,20 +57,22 @@ def probe_report(directory, now=None):
         db.execute("BEGIN")
         discovered = Counter(dict(db.execute("SELECT source,count(*) FROM tokens WHERE discovered_at>=? GROUP BY source", (start,))))
         result["discovered"] = {"total": sum(discovered.values()), "per_hour": round(sum(discovered.values()) / hours, 1),
-                                "by_source": dict(discovered)}
-        reasons, eligible_kinds, screened, eligible_tokens, total, eligible = Counter(), Counter(), set(), set(), 0, 0
-        for token, ok, payload in db.execute("SELECT token,eligible,payload FROM admission_screens"):
+                                "by_source": dict(discovered), "by_utc_hour": by_hour(
+                                    row[0] for row in db.execute("SELECT discovered_at FROM tokens WHERE discovered_at>=?", (start,)))}
+        reasons, eligible_kinds, screened, eligible_tokens, total, eligible = Counter(), Counter(), set(), {}, 0, 0
+        for token, ok, at, payload in db.execute("SELECT token,eligible,screened_at,payload FROM admission_screens ORDER BY id"):
             value = json.loads(payload)
             total += 1
             screened.add(token)
             if ok:
                 eligible += 1
-                eligible_tokens.add(token)
+                eligible_tokens.setdefault(token, at)
                 eligible_kinds[pool_kind(value.get("dex_id"), value.get("labels"))] += 1
             reasons.update(value.get("reasons") or [])
         result["screens"] = {"total": total, "eligible": eligible, "tokens_screened": len(screened),
                              "tokens_eligible": len(eligible_tokens),
                              "eligible_tokens_per_hour": round(len(eligible_tokens) / hours, 1),
+                             "eligible_tokens_by_utc_hour": by_hour(eligible_tokens.values()),
                              "rejection_reasons": dict(reasons.most_common()), "eligible_pool_kinds": dict(eligible_kinds)}
         admitted = [row[0] for row in db.execute("SELECT admitted_at FROM observation_tracks ORDER BY admitted_at")]
         gaps = [b - a for a, b in zip(admitted, admitted[1:])]
@@ -69,7 +80,8 @@ def probe_report(directory, now=None):
                                 "last": iso(admitted[-1]) if admitted else None,
                                 "gap_seconds_median": round(median(gaps)) if gaps else None,
                                 "gap_seconds_max": round(max(gaps)) if gaps else None,
-                                "gaps_over_900_seconds": sum(g > 900 for g in gaps)}
+                                "gaps": len(gaps), "gaps_over_900_seconds": sum(g > 900 for g in gaps),
+                                "by_utc_hour": by_hour(admitted)}
         result["rpc_request_budget"] = dict(db.execute("SELECT utc_day,requests FROM rpc_request_budget"))
         result["rpc_requests_per_hour"] = round((state.get("rpc_requests") or 0) / hours)
         result["health"] = {f"{s}:{k}": n for s, k, n in db.execute(
@@ -107,7 +119,7 @@ def german(result):
               f"Vorfilter: {s['tokens_screened']} Coins geprüft, {s['tokens_eligible']} geeignet "
               f"({s['eligible_tokens_per_hour']} pro Stunde)",
               f"Aufnahmen: {a['total']}; Abstand Median {a['gap_seconds_median']} s, längster {a['gap_seconds_max']} s, "
-              f"über 900 s: {a['gaps_over_900_seconds']}",
+              f"über 900 s: {a['gaps_over_900_seconds']} von {a['gaps']}",
               f"RPC-Anfragen pro Stunde: {result['rpc_requests_per_hour']}",
               f"Beobachtungen: {o['total']}; bestehen alle Einstiegsprüfungen: {o['entry_check_pass_rows']} "
               f"Zeilen von {o['entry_check_pass_tokens']} Coins",
