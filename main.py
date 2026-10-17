@@ -67,12 +67,15 @@ async def collect(engine: Engine, once: bool, cycles: int | None = None) -> int:
                 successes, failures, risk_failures = 0, 0, 0
                 if started - last_discovery >= 60:
                     try:
-                        discovered = await dex.discover()
+                        discovered, failed = await dex.discover_feeds(settings.discovery_feeds)
                         with db.conn:
-                            for token in discovered:
-                                db.discover(token, utcnow().timestamp(), "dexscreener-profile")
+                            for token, source in discovered.items():
+                                db.discover(token, utcnow().timestamp(), source)
                         last_discovery = started
-                        log.info("Discovery returned %d candidate profiles", len(discovered))
+                        log.info("Discovery returned %d candidate tokens", len(discovered))
+                        if failed:
+                            failures += 1
+                            log.warning("DEX candidate lists unavailable: %s", ",".join(failed))
                     except DataUnavailable as exc:
                         failures += 1
                         log.warning("DEX discovery unavailable: %s", exc)

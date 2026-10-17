@@ -13,6 +13,8 @@ async def test_collection_cycle_stores_real_source_and_reports_degraded_checks(t
     class FakeDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             return [snapshot.token]
         async def snapshots(self, tokens, preferred):
@@ -43,6 +45,8 @@ async def test_bounded_collection_stops_after_requested_cycles(tmp_path, monkeyp
     class FakeDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             return ["TOKEN"]
         async def snapshots(self, tokens, preferred):
@@ -71,6 +75,8 @@ async def test_collection_cycle_failure_has_nonzero_exit(engine, monkeypatch):
     class FailedDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             raise DataUnavailable("HTTP 403")
     monkeypatch.setattr(main, "DexScreener", FailedDex)
@@ -99,6 +105,8 @@ async def test_discovery_failure_still_stores_quotes_and_marks_run_degraded(tmp_
     class FakeDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             return [token]
         async def snapshots(self, tokens, preferred):
@@ -126,6 +134,8 @@ async def test_missing_pair_attempt_is_persisted_and_priority_moves_on(tmp_path,
     class FakeDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             return ["A", "B"]
         async def snapshots(self, tokens, preferred):
@@ -150,6 +160,8 @@ async def test_long_observation_gap_is_recorded(tmp_path, monkeypatch, quote):
     class FakeDex:
         def __init__(self, *args):
             pass
+        async def discover_feeds(self, feeds):
+            return dict.fromkeys(await self.discover(), "dexscreener-profile"), []
         async def discover(self):
             return [earlier.token]
         async def snapshots(self, tokens, preferred):
@@ -170,3 +182,19 @@ async def test_long_observation_gap_is_recorded(tmp_path, monkeypatch, quote):
         assert gap["token"] == earlier.token and gap["seconds"] >= 90
     finally:
         db.close()
+
+
+async def test_one_failed_candidate_list_keeps_others_and_marks_run_degraded(engine, monkeypatch):
+    engine.settings.pool_discovery_enabled = False
+    engine.settings.discovery_feeds = ["token-profiles", "token-boosts"]
+    class PartialDex:
+        def __init__(self, *args):
+            pass
+        async def discover_feeds(self, feeds):
+            assert feeds == ["token-profiles", "token-boosts"]
+            return {"BOOSTED": "dexscreener-boost"}, ["token-profiles"]
+        async def snapshots(self, tokens, preferred):
+            return {token: None for token in tokens}
+    monkeypatch.setattr(main, "DexScreener", PartialDex)
+    assert await main.collect(engine, once=True) == 2
+    assert engine.db.conn.execute("SELECT source FROM tokens WHERE token='BOOSTED'").fetchone()[0] == "dexscreener-boost"

@@ -34,6 +34,15 @@ def test_rpc_fallback_settings_validate_and_can_be_disabled(tmp_path, monkeypatc
         load_settings(tmp_path / "absent")
 
 
+def test_discovery_feeds_default_to_profiles_and_reject_unknown_lists(tmp_path, monkeypatch):
+    assert load_settings(tmp_path / "absent").discovery_feeds == ["token-profiles"]
+    monkeypatch.setenv("DISCOVERY_FEEDS", "token-profiles,token-boosts,token-boosts")
+    assert load_settings(tmp_path / "absent").discovery_feeds == ["token-profiles", "token-boosts"]
+    monkeypatch.setenv("DISCOVERY_FEEDS", "token-profiles,everything")
+    with pytest.raises(ValidationError):
+        load_settings(tmp_path / "absent")
+
+
 def test_only_one_writer(tmp_path):
     path = tmp_path / "bot.sqlite3"
     with single_writer(path):

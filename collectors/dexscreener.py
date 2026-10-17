@@ -43,6 +43,19 @@ def parse_pair(pair: dict, received_at: datetime) -> Snapshot:
         change_5m_pct=change, raw=pair)
 
 
+# Candidate lists (each 60 requests per minute) and the source label stored per token.
+FEEDS = {"token-profiles": ("/token-profiles/latest/v1", "dexscreener-profile"),
+         "token-boosts": ("/token-boosts/latest/v1", "dexscreener-boost"),
+         "community-takeovers": ("/community-takeovers/latest/v1", "dexscreener-takeover"),
+         "ads": ("/ads/latest/v1", "dexscreener-ad")}
+
+
+def solana_tokens(data) -> list[str]:
+    return list(dict.fromkeys(row["tokenAddress"] for row in data
+                if isinstance(row, dict) and row.get("chainId") == "solana"
+                and ADDRESS.fullmatch(str(row.get("tokenAddress", "")))))
+
+
 class DexScreener:
     def __init__(self, http: JsonClient, base_url: str):
         self.http, self.base_url = http, base_url
@@ -52,9 +65,28 @@ class DexScreener:
         if not isinstance(data, list):
             raise DataUnavailable("Unexpected profiles response")
         # Profiles are a biased, partial candidate feed, not all new pools.
-        return list(dict.fromkeys(row["tokenAddress"] for row in data
-                    if isinstance(row, dict) and row.get("chainId") == "solana"
-                    and ADDRESS.fullmatch(str(row.get("tokenAddress", "")))))
+        return solana_tokens(data)
+
+    async def discover_feeds(self, feeds: list[str]) -> tuple[dict[str, str], list[str]]:
+        """Tokens with the source of the first feed listing them, plus the feeds that failed.
+
+        Every feed is a biased, partial candidate list. Fails only if all feeds fail.
+        """
+        found, failed = {}, []
+        for feed in feeds:
+            path, source = FEEDS[feed]
+            try:
+                data = await self.http.request("GET", self.base_url + path)
+                if not isinstance(data, list):
+                    raise DataUnavailable("Unexpected candidate list response")
+            except DataUnavailable:
+                failed.append(feed)
+                continue
+            for token in solana_tokens(data):
+                found.setdefault(token, source)
+        if feeds and len(failed) == len(feeds):
+            raise DataUnavailable("All candidate lists unavailable")
+        return found, failed
 
     async def snapshot(self, token: str, preferred_pair: str | None = None) -> Snapshot | None:
         data = await self.http.request("GET", f"{self.base_url}/token-pairs/v1/solana/{token}")

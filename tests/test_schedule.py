@@ -211,6 +211,7 @@ async def test_pinned_pool_batch_omission_recovers_without_extra_risk_on_missing
     recovered, risk_calls = [], []
     class Dex:
         def __init__(self, *args): pass
+        async def discover_feeds(self, feeds): return dict.fromkeys(await self.discover(), 'dexscreener-profile'), []
         async def discover(self): return ['A']
         async def snapshots(self, tokens, preferred): return {'A': None}
         async def snapshot(self, token, preferred):
@@ -305,6 +306,7 @@ async def test_collect_screens_candidates_before_admission(tmp_path, monkeypatch
 
     class Dex:
         def __init__(self, *args): pass
+        async def discover_feeds(self, feeds): return dict.fromkeys(await self.discover(), 'dexscreener-profile'), []
         async def discover(self): return ['OLD', 'GOOD']
 
         async def snapshots(self, tokens, preferred):

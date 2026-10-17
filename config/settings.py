@@ -30,6 +30,9 @@ class Settings(BaseModel):
     rpc_daily_request_limit: int = Field(default=70000, ge=1)
     rpc_total_request_limit: int = Field(default=600000, ge=1)
     pool_discovery_enabled: bool = True
+    # DEX Screener candidate lists polled once per minute; see collectors.dexscreener.FEEDS.
+    discovery_feeds: list[Literal["token-profiles", "token-boosts", "community-takeovers", "ads"]] = Field(
+        default_factory=lambda: ["token-profiles"], min_length=1)
     discovery_poll_seconds: float = Field(default=20, ge=10, le=300)
     discovery_page_size: int = Field(default=20, ge=1, le=100)
     discovery_pages_per_poll: int = Field(default=2, ge=1, le=5)
@@ -77,6 +80,11 @@ class Settings(BaseModel):
             raise ValueError("A public HTTPS endpoint without user info is required")
         return value.rstrip("/")
 
+    @field_validator("discovery_feeds")
+    @classmethod
+    def unique_feeds(cls, values: list[str]) -> list[str]:
+        return list(dict.fromkeys(values))
+
     @field_validator("watch_tokens")
     @classmethod
     def valid_addresses(cls, values: list[str]) -> list[str]:
@@ -111,5 +119,5 @@ def load_settings(path: Path = Path(".env")) -> Settings:
         value = os.environ.get(key, values.get(key))
         if value is not None:
             config[name] = ([v.strip() for v in value.split(",") if v.strip()]
-                            if name in ("watch_tokens", "solana_rpc_fallback_urls") else value)
+                            if name in ("watch_tokens", "solana_rpc_fallback_urls", "discovery_feeds") else value)
     return Settings.model_validate(config)

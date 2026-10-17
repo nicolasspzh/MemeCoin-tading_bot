@@ -72,6 +72,28 @@ async def test_http_dex_and_solana_contracts():
             await solana.rpc("sendTransaction", [])
 
 
+OTHER = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
+
+async def test_candidate_feeds_keep_first_source_and_tolerate_one_failed_list():
+    async def profiles(request):
+        return web.json_response([{"chainId": "solana", "tokenAddress": TOKEN}])
+    async def boosts(request):
+        return web.json_response([{"chainId": "solana", "tokenAddress": TOKEN, "amount": 10},
+                                  {"chainId": "solana", "tokenAddress": OTHER},
+                                  {"chainId": "solana", "tokenAddress": "not-an-address"}])
+    app = web.Application()
+    app.router.add_get("/token-profiles/latest/v1", profiles)
+    app.router.add_get("/token-boosts/latest/v1", boosts)
+    async with TestServer(app) as server, aiohttp.ClientSession() as session:
+        dex = DexScreener(JsonClient(session, interval=0), str(server.make_url("")))
+        found, failed = await dex.discover_feeds(["token-profiles", "token-boosts", "community-takeovers"])
+        assert found == {TOKEN: "dexscreener-profile", OTHER: "dexscreener-boost"}
+        assert failed == ["community-takeovers"]
+        with pytest.raises(DataUnavailable, match="All candidate lists"):
+            await dex.discover_feeds(["community-takeovers", "ads"])
+
+
 async def test_rate_limit_retried_and_auth_failure_not_retried():
     calls = {"retry": 0, "denied": 0}
     async def retry(request):
