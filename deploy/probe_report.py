@@ -33,6 +33,15 @@ def by_hour(timestamps):
     return dict(sorted(Counter(hour(t) for t in timestamps).items()))
 
 
+OUTAGE_SECONDS = 300  # no collection cycle for this long: host or service was down
+
+
+def outages(cycle_times, start, end):
+    """Intervals without collection cycles, including before the first and after the last."""
+    points = [start, *sorted(t for t in cycle_times if start <= t <= end), end]
+    return [(a, b) for a, b in zip(points, points[1:]) if b - a > OUTAGE_SECONDS]
+
+
 def pool_kind(dex_id, labels):
     return f"{dex_id}{'/' + ','.join(labels) if labels else ''}"
 
@@ -58,6 +67,12 @@ def probe_report(directory, now=None):
         return result
     with sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=10) as db:
         db.execute("BEGIN")
+        down = outages([row[0] for row in db.execute(
+            "SELECT observed_at FROM collector_health WHERE source='collector' AND kind='cycle'")], start, end)
+        # Rates use the time the collector actually ran; a restart after downtime is not supply.
+        hours = max(end - start - sum(b - a for a, b in down), 1) / 3600
+        result["hours_active"] = round(hours, 2)
+        result["outages"] = [{"from": iso(a), "to": iso(b), "seconds": round(b - a)} for a, b in down]
         discovered = Counter(dict(db.execute("SELECT source,count(*) FROM tokens WHERE discovered_at>=? GROUP BY source", (start,))))
         result["discovered"] = {"total": sum(discovered.values()), "per_hour": round(sum(discovered.values()) / hours, 1),
                                 "by_source": dict(discovered), "by_utc_hour": by_hour(
@@ -78,12 +93,15 @@ def probe_report(directory, now=None):
                              "eligible_tokens_by_utc_hour": by_hour(eligible_tokens.values()),
                              "rejection_reasons": dict(reasons.most_common()), "eligible_pool_kinds": dict(eligible_kinds)}
         admitted = [row[0] for row in db.execute("SELECT admitted_at FROM observation_tracks ORDER BY admitted_at")]
-        gaps = [b - a for a, b in zip(admitted, admitted[1:])]
+        pairs = list(zip(admitted, admitted[1:]))
+        interrupted = [(a, b) for a, b in pairs if any(x < b and y > a for x, y in down)]
+        gaps = [b - a for a, b in pairs if (a, b) not in interrupted]
         result["admissions"] = {"total": len(admitted), "first": iso(admitted[0]) if admitted else None,
                                 "last": iso(admitted[-1]) if admitted else None,
                                 "gap_seconds_median": round(median(gaps)) if gaps else None,
                                 "gap_seconds_max": round(max(gaps)) if gaps else None,
                                 "gaps": len(gaps), "gaps_over_900_seconds": sum(g > 900 for g in gaps),
+                                "gaps_interrupted_by_outage": len(interrupted),
                                 "by_utc_hour": by_hour(admitted)}
         result["rpc_request_budget"] = dict(db.execute("SELECT utc_day,requests FROM rpc_request_budget"))
         result["rpc_requests_per_hour"] = round((state.get("rpc_requests") or 0) / hours)
@@ -118,11 +136,15 @@ def german(result):
     if "screens" not in result:
         return "\n".join(lines + ["Datenbank: noch nicht vorhanden."]) + "\n"
     s, a, o = result["screens"], result["admissions"], result["observations"]
-    lines += [f"Entdeckte Coins: {result['discovered']['total']} ({result['discovered']['per_hour']} pro Stunde)",
+    down = sum(x["seconds"] for x in result["outages"])
+    lines += [f"Davon aktiv: {result['hours_active']} Stunden; Ausfälle: {len(result['outages'])} "
+              f"({round(down / 60)} Minuten)",
+              f"Entdeckte Coins: {result['discovered']['total']} ({result['discovered']['per_hour']} pro Stunde)",
               f"Vorfilter: {s['tokens_screened']} Coins geprüft, {s['tokens_eligible']} geeignet "
               f"({s['eligible_tokens_per_hour']} pro Stunde)",
               f"Aufnahmen: {a['total']}; Abstand Median {a['gap_seconds_median']} s, längster {a['gap_seconds_max']} s, "
-              f"über 900 s: {a['gaps_over_900_seconds']} von {a['gaps']}",
+              f"über 900 s: {a['gaps_over_900_seconds']} von {a['gaps']} "
+              f"(ohne {a['gaps_interrupted_by_outage']} Abstände mit Ausfall)",
               f"RPC-Anfragen pro Stunde: {result['rpc_requests_per_hour']}",
               f"Beobachtungen: {o['total']}; bestehen alle Einstiegsprüfungen: {o['entry_check_pass_rows']} "
               f"Zeilen von {o['entry_check_pass_tokens']} Coins",

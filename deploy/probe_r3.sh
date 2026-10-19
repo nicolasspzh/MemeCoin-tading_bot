@@ -2,7 +2,7 @@
 # Stage D: install a finite R3 probe next to the finished R2 collection.
 # Usage: bash probe_r3.sh <probe id, e.g. d2> <hours, 1 to 72>
 # Reuses the R2 service user and RPC configuration read-only; changes no R2 file,
-# service or data, and no earlier probe. The probe is started once and not enabled at boot.
+# service or data, and no earlier probe. The probe resumes after a reboot until its end time.
 set -euo pipefail
 umask 022
 probe="${1:-}"
@@ -79,7 +79,7 @@ sed -e "s|@UNTIL@|$until_utc|g" -e "s|@ID@|$probe|g" "$app_dir/deploy/memecoin-c
 chmod 0644 "$unit_path"
 systemd-analyze verify "$unit_path"
 systemctl daemon-reload
-systemctl start "$unit_name"
+systemctl enable --now "$unit_name"
 sleep 10
 systemctl --no-pager --full status "$unit_name" || true
 echo

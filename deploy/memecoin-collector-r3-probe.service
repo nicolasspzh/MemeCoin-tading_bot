@@ -38,3 +38,7 @@ RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 CapabilityBoundingSet=
 StandardOutput=journal
 StandardError=journal
+
+# Resume the same finite campaign after a host reboot; ends by itself at --until.
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from collectors.schedule import ObservationSchedule
@@ -37,6 +37,9 @@ def test_probe_report_counts_screens_admissions_and_checks(tmp_path):
         later = now + 1000
         schedule.record_screens(later, {"A": dex_quote("A", "A-SWAP", start), "C": None})
         assert schedule.select(later) == ["B", "A"]
+        with db.conn:
+            for second in range(0, 7200, 60):
+                db.record_health("collector", start.timestamp() + second, "cycle", "{}")
         for token, pair, seconds in (("B", "B-SWAP", 20), ("A", "A-SWAP", 1010)):
             recorder.process(schedule.decorate(dex_quote(token, pair, start + timedelta(seconds=seconds))))
     finally:
@@ -76,3 +79,30 @@ def test_probe_report_counts_only_until_an_early_stop(tmp_path):
     assert result["hours_observed"] == 7 and result["state"]["stopped_at"]
     campaign.atomic_json(directory / "state.json", {"status": "running"})
     assert probe_report(directory, now=created + timedelta(hours=2))["hours_observed"] == 2
+
+
+def test_outages_are_excluded_from_rates_and_admission_gaps(tmp_path):
+    start = utcnow()
+    settings = Settings(observation_cohorts=True, admission_prefilter=True, pool_discovery_enabled=False)
+    directory = tmp_path / "probe"
+    campaign.initialize(directory, (start + timedelta(hours=8)).isoformat(), settings)
+    created = datetime.fromisoformat(campaign.load_manifest(directory)["created_at"]).timestamp()
+    db = Database(directory / "observations.sqlite3", "dexscreener")
+    try:
+        with db.conn:
+            # Cycles for an hour, a one-hour reboot, then another hour of cycles.
+            for second in [*range(0, 3600, 60), *range(7200, 10800, 60)]:
+                db.record_health("collector", created + second, "cycle", "{}")
+            for token, admitted in (("A", 600), ("B", 1320), ("C", 7300)):
+                db.discover(token, created + admitted, "test")
+                db.conn.execute("INSERT INTO observation_tracks VALUES(?,?,?,?,?,NULL,NULL)",
+                                (token, token + "-POOL", created + admitted, created + admitted + 1800,
+                                 created + admitted + 5760))
+    finally:
+        db.close()
+    result = probe_report(directory, now=datetime.fromtimestamp(created + 10800, UTC))
+    assert result["hours_observed"] == 3 and result["hours_active"] == 1.98  # 3660 s without cycles
+    assert len(result["outages"]) == 1 and result["outages"][0]["seconds"] == 3660
+    assert result["admissions"]["gaps"] == 1 and result["admissions"]["gaps_interrupted_by_outage"] == 1
+    assert result["admissions"]["gaps_over_900_seconds"] == 0
+    assert "Ausfälle: 1 (61 Minuten)" in german(result)
