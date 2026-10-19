@@ -21,9 +21,9 @@ Ursache, geprüft am 19.10. mit Angaben des Betreibers vom VPS:
 - `uptime -s`: Der VPS läuft seit 18.10. 17:17:02, also 12 Minuten nach dem
   Stopp neu gestartet.
 
-Folgerung: Der VPS wurde heruntergefahren oder neu gestartet. Ob das der
-Betreiber, der Anbieter oder etwas anderes ausgelöst hat, ist nicht
-bekannt. Der Probelauf-Dienst war absichtlich nicht für den Systemstart
+Folgerung: Der VPS wurde heruntergefahren und neu gestartet. Laut
+Betreiber (19.10.) war es eine Wartung des VPS-Anbieters, die dieser
+schriftlich mitgeteilt hat. Der Probelauf-Dienst war absichtlich nicht für den Systemstart
 eingerichtet und lief deshalb nicht weiter. Ab Stufe D3 wird er beim Start
 fortgesetzt (siehe [R3-STUFE-D3-ANLEITUNG.md](R3-STUFE-D3-ANLEITUNG.md)).
 Ein R3-Test über 7 bis 14 Tage muss einen Neustart ohnehin überstehen.
