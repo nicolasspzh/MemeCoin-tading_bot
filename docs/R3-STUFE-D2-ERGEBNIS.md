@@ -1,4 +1,4 @@
-# R3 Stufe D2: Ergebnis des zweiten Probelaufs (vorläufig)
+# R3 Stufe D2: Ergebnis des zweiten Probelaufs
 
 Geplant: 24 Stunden ab 18.10.2026, 09:40 Uhr Schweizer Zeit (07:40 UTC).
 Bericht vom Betreiber übermittelt, unverändert abgelegt in
@@ -13,18 +13,28 @@ nicht nach 24 Stunden. Belege:
 - Letzte Aufnahme 15:01 UTC; Entdeckungen, geeignete Coins und Aufnahmen
   gibt es nur in den UTC-Stunden 07 bis 15.
 
-`stopped_by_request` entsteht, wenn der Dienst ein Stoppsignal bekommt
-(`systemctl stop` oder ein Herunterfahren beziehungsweise Neustart des VPS)
-oder eine Stoppdatei vorliegt. Welche Ursache es war, ist offen. Der Dienst
-startet nach einem Neustart absichtlich nicht von selbst.
+Ursache, geprüft am 19.10. mit Angaben des Betreibers vom VPS:
+
+- `state.json`: gestoppt am 18.10. um 15:05:15 UTC (17:05 Uhr Schweizer Zeit).
+- `journalctl`: systemd hat den Dienst um 17:05:15 gestoppt, der Dienst hat
+  sich sauber beendet (`Deactivated successfully`).
+- `uptime -s`: Der VPS läuft seit 18.10. 17:17:02, also 12 Minuten nach dem
+  Stopp neu gestartet.
+
+Folgerung: Der VPS wurde heruntergefahren oder neu gestartet. Ob das der
+Betreiber, der Anbieter oder etwas anderes ausgelöst hat, ist nicht
+bekannt. Der Probelauf-Dienst war absichtlich nicht für den Systemstart
+eingerichtet und lief deshalb nicht weiter. Ab Stufe D3 wird er beim Start
+fortgesetzt (siehe [R3-STUFE-D3-ANLEITUNG.md](R3-STUFE-D3-ANLEITUNG.md)).
+Ein R3-Test über 7 bis 14 Tage muss einen Neustart ohnehin überstehen.
 
 **Fehler in meinem Bericht:** `deploy/probe_report.py` hat bei einem
 vorzeitigen Ende trotzdem durch die geplanten 24 Stunden geteilt. Alle
 Werte pro Stunde im Bericht sind deshalb rund dreimal zu tief. Behoben am
 19.10. mit Test: Der Bericht rechnet jetzt bis zum Stoppzeitpunkt aus
 `state.json`. Die korrigierten Werte unten habe ich mit 7,45 Stunden
-gerechnet. Das ist eine Schätzung aus der Zahl der Runden, der genaue
-Stoppzeitpunkt steht in `state.json` auf dem VPS.
+gerechnet. Laut `state.json` lief der Lauf von 07:40:46 bis 15:05:15 UTC,
+also 7,41 Stunden. Die Abweichung zu 7,45 ändert keine Aussage.
 
 ## Ergebnis gegen die festgelegten Grenzen
 
@@ -52,8 +62,16 @@ die Nacht zu messen, ist nicht erreicht.
 - Nur zur Information: 637 Beobachtungen von 10 Coins bestehen alle
   Einstiegsprüfungen.
 
+## Speicher
+
+`journalctl` meldet für den Dienst einen Höchstwert von 384,3 MB
+Arbeitsspeicher. Das entspricht der Grenze `MemoryHigh=384M`. Im Status
+nach 17 Minuten waren es 62 MB. Ob der Anstieg vom Programm selbst oder vom
+Datei-Zwischenspeicher der Datenbank kommt (den Linux bei Bedarf wieder
+freigibt), lässt sich daraus nicht erkennen. R2 lief mit denselben Grenzen
+eine Woche. Für Stufe D3 frage ich zusätzlich die Aufteilung ab.
+
 ## Offen
 
-- Ursache des vorzeitigen Endes.
 - Abend und Nacht sind weiterhin nicht auf dem VPS gemessen.
 - Helius-Credits vor und nach dem Lauf.

@@ -273,6 +273,13 @@ Profile 6,0 geeignete Coins pro Stunde. Neu: Der Vorfilter sperrt Pools über
 24 Stunden oder mit unbekanntem Alter. Zweiter Probelauf über 24 Stunden mit
 unveränderten Grenzen: [`R3-STUFE-D2-ANLEITUNG.md`](R3-STUFE-D2-ANLEITUNG.md).
 
+**Stufe D2 vorzeitig beendet (18.10.).** Neustart des VPS nach 7,4 Stunden;
+Ergebnis in [`R3-STUFE-D2-ERGEBNIS.md`](R3-STUFE-D2-ERGEBNIS.md): 78,6 % statt
+80 % der Aufnahmeabstände höchstens 900 Sekunden, alle anderen Grenzen
+bestanden, rund 4,7 geeignete Coins pro Stunde am Tag. Dritter Lauf,
+neustartfest und mit Ausfallerkennung im Bericht:
+[`R3-STUFE-D3-ANLEITUNG.md`](R3-STUFE-D3-ANLEITUNG.md).
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |
