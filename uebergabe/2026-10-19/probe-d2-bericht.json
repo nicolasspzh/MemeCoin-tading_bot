@@ -1,0 +1,85 @@
+{
+ "admission_interval_seconds": 720,
+ "admission_prefilter": true,
+ "admissions": {
+  "by_utc_hour": {"07": 2, "08": 3, "09": 3, "10": 4, "11": 5, "12": 5, "13": 3, "14": 3, "15": 1},
+  "first": "2026-10-18T07:40:49.514304+00:00",
+  "gap_seconds_max": 3097,
+  "gap_seconds_median": 727,
+  "gaps": 28,
+  "gaps_over_900_seconds": 6,
+  "last": "2026-10-18T15:01:19.856492+00:00",
+  "total": 29
+ },
+ "created_at": "2026-10-18T07:40:46.485733+00:00",
+ "discovered": {
+  "by_source": {"dexscreener-profile": 115, "raydium-cpmm-finalized": 45},
+  "by_utc_hour": {"07": 48, "08": 5, "09": 13, "10": 16, "11": 11, "12": 22, "13": 19, "14": 22, "15": 4},
+  "per_hour": 6.7,
+  "total": 160
+ },
+ "fills": 0,
+ "health": {
+  "raydium-cpmm-finalized:bootstrap_boundary": 1,
+  "raydium-cpmm-finalized:signature_page": 224,
+  "raydium-cpmm-finalized:started": 15,
+  "raydium-cpmm-finalized:stopped": 15,
+  "scheduler:capacity_deferred": 1309
+ },
+ "hours_observed": 24.0,
+ "observations": {
+  "entry_check_pass_rows": 637,
+  "entry_check_pass_tokens": 10,
+  "holder_status": {"complete": 7542, "none": 40},
+  "priced": 7582,
+  "top_blockers": {
+   "coarse_holder_sample": 3930,
+   "followup_only_no_new_entry": 5065,
+   "high_creator_observed_balance": 490,
+   "high_top10_owner_concentration": 2036,
+   "incomplete_onchain_checks": 40,
+   "insufficient_onchain_liquidity": 4012,
+   "insufficient_or_unknown_liquidity": 3584,
+   "insufficient_or_unknown_volume": 2740,
+   "insufficient_verified_lp_nonredeemable_fraction": 321,
+   "missing_verified_holder_risk": 40,
+   "pool_fee_above_limit": 224,
+   "pumpswap_boost_window": 224
+  },
+  "total": 7582,
+  "with_data_errors": 40
+ },
+ "orders": 0,
+ "profile": "r3-probe",
+ "rpc_request_budget": {"2026-10-18": 8054},
+ "rpc_requests_per_hour": 336,
+ "screens": {
+  "eligible": 54,
+  "eligible_pool_kinds": {"pumpswap": 49, "raydium/CPMM": 5},
+  "eligible_tokens_by_utc_hour": {"07": 6, "09": 3, "10": 4, "11": 7, "12": 7, "13": 2, "14": 3, "15": 3},
+  "eligible_tokens_per_hour": 1.5,
+  "rejection_reasons": {
+   "insufficient_or_unknown_liquidity": 732,
+   "missing_price": 30,
+   "no_dex_pair": 5,
+   "pool_older_than_entry_window": 42,
+   "unknown_pair_age": 6,
+   "unsupported_dex_pool": 423,
+   "unsupported_quote_mint": 123
+  },
+  "tokens_eligible": 35,
+  "tokens_screened": 159,
+  "total": 840
+ },
+ "slots": 8,
+ "state": {
+  "backup_error_type": null,
+  "completed_cycles": 1341,
+  "data_degraded": false,
+  "rpc_requests": 8054,
+  "rpc_successes": 8050,
+  "status": "stopped_by_request",
+  "worker_launches": 15
+ },
+ "until": "2026-10-19T07:40:45+00:00"
+}

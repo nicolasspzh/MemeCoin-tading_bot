@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from collectors.schedule import ObservationSchedule
@@ -63,3 +63,16 @@ def test_probe_report_before_first_database(tmp_path):
     result = probe_report(directory)
     assert result["database"] is None
     assert "noch nicht vorhanden" in german(result)
+
+
+def test_probe_report_counts_only_until_an_early_stop(tmp_path):
+    start = utcnow()
+    directory = tmp_path / "probe"
+    campaign.initialize(directory, (start + timedelta(hours=24)).isoformat(), Settings(observation_cohorts=True))
+    created = datetime.fromisoformat(campaign.load_manifest(directory)["created_at"])
+    campaign.atomic_json(directory / "state.json", {"status": "stopped_by_request",
+                                                    "stopped_at": (created + timedelta(hours=7)).isoformat()})
+    result = probe_report(directory, now=start + timedelta(hours=30))
+    assert result["hours_observed"] == 7 and result["state"]["stopped_at"]
+    campaign.atomic_json(directory / "state.json", {"status": "running"})
+    assert probe_report(directory, now=created + timedelta(hours=2))["hours_observed"] == 2

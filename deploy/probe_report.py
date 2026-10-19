@@ -43,11 +43,14 @@ def probe_report(directory, now=None):
     settings = Settings.model_validate({k: v for k, v in manifest["settings"].items() if k not in EXCLUDED_SETTINGS})
     start = datetime.fromisoformat(manifest["created_at"]).timestamp()
     end = min((now or datetime.now(UTC)).timestamp(), datetime.fromisoformat(manifest["until"]).timestamp())
+    if state.get("stopped_at") and state.get("status") not in ("starting", "running", "restarting"):
+        # A probe stopped early observed only until its stop, not until the planned end.
+        end = min(end, datetime.fromisoformat(state["stopped_at"]).timestamp())
     hours = max(end - start, 1) / 3600
     result = {"profile": manifest.get("profile", "r2"), "created_at": manifest["created_at"], "until": manifest["until"],
               "hours_observed": round(hours, 2), "admission_prefilter": settings.admission_prefilter,
               "slots": settings.max_watch_tokens, "admission_interval_seconds": settings.observation_admission_seconds,
-              "state": {k: state.get(k) for k in ("status", "completed_cycles", "worker_launches", "rpc_requests",
+              "state": {k: state.get(k) for k in ("status", "stopped_at", "completed_cycles", "worker_launches", "rpc_requests",
                                                    "rpc_successes", "data_degraded", "backup_error_type")}}
     path = directory / "observations.sqlite3"
     if not path.exists():
