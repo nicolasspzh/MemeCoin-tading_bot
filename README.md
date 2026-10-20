@@ -66,6 +66,7 @@ keine Trades und berechnet keine Rendite.
 | Was läuft, was fehlt, Zeitfenster | [Projektstand](docs/PROJEKTSTAND.md) |
 | Ergebnis und Analyse von R2 | [R2-Ergebnis](docs/R2-ERGEBNIS.md) |
 | Plan für die nächste Version | [R3-Plan](docs/R3-PLAN.md) |
+| R3-Test: Protokoll und Installation | [Protokoll](docs/R3-PROTOKOLL.md), [Anleitung](docs/R3-TEST-ANLEITUNG.md) |
 | R3-Diagnose auf den R2-Daten | [Stufe C](docs/R3-STUFE-C-DIAGNOSE.md) |
 | R3-Probelauf auf dem VPS | [Anleitung](docs/R3-STUFE-D-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D-ERGEBNIS.md), [zweiter Lauf](docs/R3-STUFE-D2-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D2-ERGEBNIS.md), [dritter Lauf](docs/R3-STUFE-D3-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D3-ERGEBNIS.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |

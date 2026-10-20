@@ -290,6 +290,10 @@ dazu Auslagerung), Gründe der `resolve_error` der Raydium-Suche,
 Helius-Credits für 7 oder 14 Tage, Sandwich-Aufschlag im Stress-Szenario,
 erlaubte Kursbewegung beim Verkauf, Wartungstermine des VPS-Anbieters.
 
+**Stufe E (20.10.).** Entscheidungen getroffen und Protokoll eingefroren:
+[`R3-PROTOKOLL.md`](R3-PROTOKOLL.md). Testfenster 21.10. bis 28.10.2026
+(00:00 UTC). Installation: [`R3-TEST-ANLEITUNG.md`](R3-TEST-ANLEITUNG.md).
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |
