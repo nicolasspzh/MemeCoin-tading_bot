@@ -46,14 +46,22 @@ Stunden, keine Ausfälle, kein Neustart des VPS (läuft seit 18.10. 17:17).
   Arbeitsspeicher an die Grenze kommen. Das ist eine Folgerung, kein
   Beleg. Welcher Prozess (Aufseher oder Sammler) wie viel braucht, ist
   unbekannt. Vor einem Test über 7 Tage muss das geklärt werden, sonst
-  droht bei `MemoryMax=512M` ein Abbruch.
+  droht bei `MemoryMax=512M` ein Abbruch. Der VPS hat laut `free -h`
+  (20.10.) 3,8 GiB Arbeitsspeicher, davon 3,5 GiB verfügbar, und 1 GiB
+  Auslagerung. Eine höhere Grenze für den Dienst ist also möglich.
 - **On-chain-Suche nach Raydium-Pools:** 437 Meldungen `resolve_error`.
   Diese Suche ist eine von zwei Quellen und lief trotzdem weiter. Sie
-  setzt vermutlich auch `data_degraded=true`. Die Gründe stehen in der
-  Datenbank und sind noch nicht ausgelesen.
-- **Helius-Credits:** noch nicht übermittelt. Hochgerechnet aus den
-  gezählten Anfragen bräuchte ein 7-Tage-Test rund 213'000 Anfragen,
-  ein 14-Tage-Test rund 425'000. Wie viele Credits das sind, ist offen.
+  setzt vermutlich auch `data_degraded=true`. Alle 437 Meldungen lauten
+  „Some discovery transactions remain pending; retries retained": Einzelne
+  Transaktionen liessen sich noch nicht abrufen und werden später erneut
+  versucht (`collectors/pools.py`). Ob sie am Ende alle aufgelöst wurden,
+  ist nicht ausgelesen.
+- **Helius-Credits:** 322'096 von 1'000'000 am 20.10. nach D3, laut
+  Betreiber Erneuerung in zwei Tagen. Am 17.10. nach D1 waren es 284'261.
+  Die Differenz von 37'835 Credits gehört zu D2 und D3 mit zusammen
+  38'447 gezählten Anfragen. Folgerung, unter der Annahme, dass sonst
+  nichts den Schlüssel nutzt: rund 1 Credit pro Anfrage. Ein 7-Tage-Test
+  bräuchte damit rund 213'000 Credits, ein 14-Tage-Test rund 425'000.
 
 ## Grenzen
 
