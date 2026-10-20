@@ -1,0 +1,218 @@
+{
+  "plan": {
+    "version": 2,
+    "created_at_utc": "2026-10-20T19:38:37.822673+00:00",
+    "development_end_utc": "2026-10-20T18:13:54.162069+00:00",
+    "test_start_utc": "2026-10-21T00:00:00+00:00",
+    "test_end_exclusive_utc": "2026-10-28T00:00:00+00:00",
+    "embargo_seconds": 3600,
+    "development_references": [
+      {
+        "name": "r2-final",
+        "sha256": "c270356bf1cdb20b1bd6912be8f639f345b22e489b08a97aa1f0d0ebe7b3d763",
+        "rows": 244693,
+        "first_utc": "2026-10-08T14:58:45.017232+00:00",
+        "last_utc": "2026-10-16T01:05:39.351042+00:00",
+        "location": "Finale R2-Datenbank (Datei-Hash), Kopien auf PC, NAS und in Google Drive"
+      },
+      {
+        "name": "probe-d1",
+        "sha256": "f5ef2dfe9b79b6dfd5ff6add9a0ab467e6694be2b90209af7e1fba4ffd6e3be4",
+        "rows": 5713,
+        "first_utc": "2026-10-17T08:07:12.415699+00:00",
+        "last_utc": "2026-10-17T16:07:11+00:00",
+        "location": "Bericht uebergabe/2026-10-17/probe-d1-bericht.json; Daten auf dem VPS unter probe-d1"
+      },
+      {
+        "name": "supply-sampler",
+        "sha256": "c13010bb78eac97d46c18ab991028188e73146b0abc6ef5d24617139bf39e951",
+        "rows": 2140,
+        "first_utc": "2026-10-17T16:12:28.007996+00:00",
+        "last_utc": "2026-10-17T19:11:34.240870+00:00",
+        "location": "uebergabe/2026-10-17/supply-sampler-log.jsonl"
+      },
+      {
+        "name": "probe-d2",
+        "sha256": "686d10a057142cf1c159a1e65302aefc8ce4a4986e553866b0ad3888d2147897",
+        "rows": 7582,
+        "first_utc": "2026-10-18T07:40:46.485733+00:00",
+        "last_utc": "2026-10-18T15:05:15.908302+00:00",
+        "location": "Bericht uebergabe/2026-10-19/probe-d2-bericht.json; Daten auf dem VPS unter probe-d2"
+      },
+      {
+        "name": "cloud-dry-runs",
+        "sha256": "a7d470e4f73a6c9163ea2f163a4e24d61f69110e48672fc5b189bc0b05c14249",
+        "rows": 73,
+        "first_utc": "2026-10-16T21:38:57.381600+00:00",
+        "last_utc": "2026-10-19T18:09:19.527189+00:00",
+        "location": "uebergabe/2026-10-20/cloud-dry-runs.json"
+      },
+      {
+        "name": "probe-d3",
+        "sha256": "a58dd9afaa73a8527968915faef5c1948d4346fc6fcbdc13dc06679ea93a05bd",
+        "rows": 28570,
+        "first_utc": "2026-10-19T18:13:55.695190+00:00",
+        "last_utc": "2026-10-20T18:13:54.162069+00:00",
+        "location": "Bericht uebergabe/2026-10-19/probe-d3-bericht.json; Daten auf dem VPS unter probe-d3"
+      }
+    ],
+    "code_sha256": "2e8b8c2bd50a2de684c3c3bdfadfb9f44863d62905ff2b4f1d42860ae7532373",
+    "scenario_definitions": {
+      "baseline": {
+        "settings": {
+          "mode": "PAPER",
+          "rpc_cache_seconds": 60.0,
+          "poll_seconds": 20.0,
+          "max_watch_tokens": 8,
+          "watch_tokens": [],
+          "observation_cohorts": true,
+          "observation_primary_seconds": 1800,
+          "observation_admission_seconds": 720,
+          "admission_prefilter": true,
+          "rpc_daily_request_limit": 70000,
+          "rpc_total_request_limit": 600000,
+          "pool_discovery_enabled": true,
+          "discovery_feeds": [
+            "token-profiles"
+          ],
+          "discovery_poll_seconds": 120.0,
+          "discovery_page_size": 20,
+          "discovery_pages_per_poll": 2,
+          "discovery_transactions_per_poll": 4,
+          "min_liquidity_usd": "10000",
+          "min_volume_5m_usd": "1000",
+          "max_top10_account_fraction": "0.60",
+          "require_verified_holder_risk": true,
+          "max_top10_owner_fraction": "0.60",
+          "max_unobserved_account_fraction": "0.01",
+          "max_creator_observed_fraction": "0.10",
+          "min_lp_nonredeemable_fraction": "0.90",
+          "fee_bps": "30",
+          "max_pool_fee_bps": "200",
+          "slippage_bps": "100",
+          "fixed_fee_usd": "0.02",
+          "paper_latency_seconds": 1.0,
+          "paper_order_ttl_seconds": 120.0,
+          "paper_priority_fee_usd": "0.005",
+          "paper_failure_probability": 0.02,
+          "paper_max_adverse_move_bps": "300",
+          "paper_max_adverse_sell_bps": "1000",
+          "paper_sandwich_buy_bps": "0",
+          "paper_seed": 7,
+          "position_fraction": "0.05",
+          "max_positions": 3,
+          "max_quote_age_seconds": 120,
+          "max_exit_check_age_seconds": 900,
+          "min_age_seconds": 60,
+          "min_pumpswap_age_seconds": 600,
+          "max_age_seconds": 86400,
+          "max_position_seconds": 900,
+          "stop_loss_fraction": "0.12",
+          "take_profit_fraction": "0.25",
+          "trailing_stop_fraction": "0.10",
+          "min_momentum_fraction": "0.01",
+          "max_pool_fraction": "0.001"
+        },
+        "execution": {
+          "latency_seconds": 1.0,
+          "order_ttl_seconds": 120.0,
+          "priority_fee_usd": "0.005",
+          "failure_probability": 0.02,
+          "max_adverse_move_bps": "300",
+          "max_adverse_sell_bps": "1000",
+          "sandwich_buy_bps": "0",
+          "seed": 7
+        }
+      },
+      "stress": {
+        "settings": {
+          "mode": "PAPER",
+          "rpc_cache_seconds": 60.0,
+          "poll_seconds": 20.0,
+          "max_watch_tokens": 8,
+          "watch_tokens": [],
+          "observation_cohorts": true,
+          "observation_primary_seconds": 1800,
+          "observation_admission_seconds": 720,
+          "admission_prefilter": true,
+          "rpc_daily_request_limit": 70000,
+          "rpc_total_request_limit": 600000,
+          "pool_discovery_enabled": true,
+          "discovery_feeds": [
+            "token-profiles"
+          ],
+          "discovery_poll_seconds": 120.0,
+          "discovery_page_size": 20,
+          "discovery_pages_per_poll": 2,
+          "discovery_transactions_per_poll": 4,
+          "min_liquidity_usd": "10000",
+          "min_volume_5m_usd": "1000",
+          "max_top10_account_fraction": "0.60",
+          "require_verified_holder_risk": true,
+          "max_top10_owner_fraction": "0.60",
+          "max_unobserved_account_fraction": "0.01",
+          "max_creator_observed_fraction": "0.10",
+          "min_lp_nonredeemable_fraction": "0.90",
+          "fee_bps": "30",
+          "max_pool_fee_bps": "200",
+          "slippage_bps": "300",
+          "fixed_fee_usd": "0.04",
+          "paper_latency_seconds": 1.0,
+          "paper_order_ttl_seconds": 120.0,
+          "paper_priority_fee_usd": "0.005",
+          "paper_failure_probability": 0.02,
+          "paper_max_adverse_move_bps": "300",
+          "paper_max_adverse_sell_bps": "1000",
+          "paper_sandwich_buy_bps": "0",
+          "paper_seed": 7,
+          "position_fraction": "0.05",
+          "max_positions": 3,
+          "max_quote_age_seconds": 120,
+          "max_exit_check_age_seconds": 900,
+          "min_age_seconds": 60,
+          "min_pumpswap_age_seconds": 600,
+          "max_age_seconds": 86400,
+          "max_position_seconds": 900,
+          "stop_loss_fraction": "0.12",
+          "take_profit_fraction": "0.25",
+          "trailing_stop_fraction": "0.10",
+          "min_momentum_fraction": "0.01",
+          "max_pool_fraction": "0.001"
+        },
+        "execution": {
+          "latency_seconds": 5.0,
+          "order_ttl_seconds": 120.0,
+          "priority_fee_usd": "0.02",
+          "failure_probability": 0.1,
+          "max_adverse_move_bps": "300",
+          "max_adverse_sell_bps": "500",
+          "sandwich_buy_bps": "50",
+          "seed": 7
+        }
+      }
+    },
+    "seeds": [
+      7,
+      17,
+      29
+    ],
+    "quality_policy": {
+      "minimum_days": 3,
+      "minimum_active_5min_fraction": 0.8,
+      "minimum_priced_fraction": 0.95,
+      "minimum_modern_risk_fraction": 0.95,
+      "maximum_long_gap_fraction": 0.1,
+      "minimum_pairs_with_followups": 30,
+      "minimum_closed_trades": 100,
+      "minimum_closed_trade_tokens": 20
+    },
+    "rules": [
+      "No tuning on holdout",
+      "Fresh USD 50 per scenario",
+      "No carried positions or signals across boundary",
+      "Do not evaluate performance before window end",
+      "Restart with a new future plan after strategy/code changes"
+    ]
+  },
+  "sha256": "6175b5577d9216c1870810dafdbc96bbc8399fec578fccb47525c23dc3b84c84"
+}

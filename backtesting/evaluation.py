@@ -140,7 +140,9 @@ def scenario_definitions(settings):
     stress = baseline.model_copy(update={"latency_seconds": max(5, baseline.latency_seconds * 5),
         "priority_fee_usd": max(D(".02"), baseline.priority_fee_usd * 4),
         "failure_probability": max(.1, baseline.failure_probability),
-        "max_adverse_move_bps": min(D(500), baseline.max_adverse_move_bps)})
+        "max_adverse_move_bps": min(D(500), baseline.max_adverse_move_bps),
+        "max_adverse_sell_bps": min(D(500), baseline.max_adverse_sell_bps),
+        "sandwich_buy_bps": max(D(50), baseline.sandwich_buy_bps)})
     costly = settings.model_copy(update={"slippage_bps": min(D(9999), max(D(300), settings.slippage_bps * 3)),
                                         "fixed_fee_usd": settings.fixed_fee_usd * 2})
     return {name: {"settings": s.model_dump(mode="json", exclude=EXCLUDED_SETTINGS),
@@ -263,16 +265,60 @@ def prepare(paths, out, settings, *, start=None, days=7, now=None):
     return envelope
 
 
+def prepare_references(references, out, settings, *, start, days=7, now=None):
+    """Plan whose development evidence is too large to freeze beside it.
+
+    Each known data set is bound by its file SHA-256, row count and observed time
+    range; the copies stay outside (PC, NAS, VPS). The holdout must start after
+    the latest of them, plus the embargo.
+    """
+    now = now or datetime.now(UTC)
+    if not settings.require_verified_holder_risk:
+        raise ValueError("Prospective validation requires verified holder risk")
+    if days < 3:
+        raise ValueError("Holdout requires at least three calendar days")
+    refs = []
+    for ref in references:
+        if not (isinstance(ref.get("sha256"), str) and len(ref["sha256"]) == 64
+                and all(c in "0123456789abcdef" for c in ref["sha256"]) and ref.get("name")):
+            raise ValueError("Each development reference needs a name and a SHA-256")
+        first, last = utc(ref["first_utc"]), utc(ref["last_utc"])
+        if last < first or int(ref["rows"]) < 0:
+            raise ValueError("Invalid development reference range")
+        refs.append({**ref, "first_utc": first.isoformat(), "last_utc": last.isoformat(), "rows": int(ref["rows"])})
+    if not refs:
+        raise ValueError("At least one development reference is required")
+    last = max(utc(ref["last_utc"]) for ref in refs)
+    if last > now:
+        raise ValueError("Development references contain future observations")
+    start = utc(start)
+    if start < max(now, last) + timedelta(hours=1):
+        raise ValueError("Holdout must begin in the future after a one-hour embargo")
+    out.mkdir(parents=True, exist_ok=False)
+    plan = {"version": 2, "created_at_utc": now.isoformat(), "development_end_utc": last.isoformat(),
+            "test_start_utc": start.isoformat(), "test_end_exclusive_utc": (start + timedelta(days=days)).isoformat(),
+            "embargo_seconds": 3600, "development_references": refs, "code_sha256": code_digest(),
+            "scenario_definitions": scenario_definitions(settings), "seeds": list(SEEDS), "quality_policy": POLICY,
+            "rules": ["No tuning on holdout", "Fresh USD 50 per scenario", "No carried positions or signals across boundary",
+                      "Do not evaluate performance before window end", "Restart with a new future plan after strategy/code changes"]}
+    envelope = {"plan": plan, "sha256": digest(plan)}
+    write_json(out / "protocol.json", envelope)
+    return envelope
+
+
 def load_protocol(path):
     envelope = json.loads(path.read_text())
     plan = envelope["plan"]
     if digest(plan) != envelope["sha256"]:
         raise ValueError("Protocol fingerprint mismatch")
-    if plan["version"] != 1 or plan["code_sha256"] != code_digest():
+    if plan["version"] not in (1, 2) or plan["code_sha256"] != code_digest():
         raise ValueError("Code changed since protocol preparation; a new future plan is required")
-    _, development = read_observations(path.parent / "development.sqlite3")
-    if development["snapshots_sha256"] != plan["development_snapshots_sha256"]:
-        raise ValueError("Frozen development evidence changed")
+    if plan["version"] == 1:
+        _, development = read_observations(path.parent / "development.sqlite3")
+        if development["snapshots_sha256"] != plan["development_snapshots_sha256"]:
+            raise ValueError("Frozen development evidence changed")
+    elif not plan.get("development_references"):
+        raise ValueError("Protocol without development evidence")
     if (utc(plan["test_start_utc"]) < max(utc(plan["created_at_utc"]), utc(plan["development_end_utc"])) + timedelta(seconds=plan["embargo_seconds"])
             or utc(plan["test_end_exclusive_utc"]) <= utc(plan["test_start_utc"])):
         raise ValueError("Invalid holdout time boundaries")

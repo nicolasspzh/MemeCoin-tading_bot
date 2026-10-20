@@ -24,8 +24,10 @@ def build(output, protocol=True):
     folder = (str(Path(json.loads(release.read_text())['protocol']).parent) + '/'
               if release.exists() else 'runtime/backtests/phase6-protocol-20261007/')
     # A probe without test character carries no frozen protocol.
+    # A reference protocol (version 2) binds external evidence and has no frozen copy.
     for name in ("protocol.json", "development.sqlite3") if protocol else ():
-        files[folder + name] = (ROOT / folder / name).read_bytes()
+        if name == "protocol.json" or (ROOT / folder / name).exists():
+            files[folder + name] = (ROOT / folder / name).read_bytes()
     # Compare actual configured secret values without putting any in output.
     from config.settings import load_settings
     from urllib.parse import parse_qs, urlsplit

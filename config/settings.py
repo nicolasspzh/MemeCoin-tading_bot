@@ -55,6 +55,10 @@ class Settings(BaseModel):
     paper_priority_fee_usd: Decimal = Field(default=Decimal("0.005"), ge=0)
     paper_failure_probability: float = Field(default=0.02, ge=0, le=1)
     paper_max_adverse_move_bps: Decimal = Field(default=Decimal("300"), ge=0, le=10000)
+    # Exits must still fill in a falling coin; entries keep the tight limit against sandwiches.
+    paper_max_adverse_sell_bps: Decimal = Field(default=Decimal("1000"), ge=0, le=10000)
+    # Extra buy price for sandwich attacks; zero in baseline, set by the stress scenario.
+    paper_sandwich_buy_bps: Decimal = Field(default=Decimal("0"), ge=0, le=1000)
     paper_seed: int = 7
     position_fraction: Decimal = Field(default=Decimal("0.05"), gt=0, le=Decimal("0.10"))
     max_positions: int = Field(default=3, ge=1, le=10)

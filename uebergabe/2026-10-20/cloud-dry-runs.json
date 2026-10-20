@@ -1,0 +1,8 @@
+{
+ "note": "Kurze Testläufe in der Cloud mit öffentlichem Solana-Zugang, nur zur Funktionsprüfung. Datenbanken nur im Cloud-Scratchpad, nicht aufbewahrt.",
+ "runs": [
+  {"purpose": "Stufe D, erster Kurztest", "rows": 55, "first_utc": "2026-10-16T21:38:57.381600+00:00", "last_utc": "2026-10-16T21:53:57.054752+00:00"},
+  {"purpose": "Stufe D2, Kurztest Paket", "rows": 8, "first_utc": "2026-10-17T21:19:46.443997+00:00", "last_utc": "2026-10-17T21:22:06.500280+00:00"},
+  {"purpose": "Stufe D3, Neustart-Test", "rows": 10, "first_utc": "2026-10-19T18:00:56.252863+00:00", "last_utc": "2026-10-19T18:09:19.527189+00:00"}
+ ]
+}

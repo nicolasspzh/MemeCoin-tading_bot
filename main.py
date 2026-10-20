@@ -4,6 +4,7 @@ import asyncio
 import fcntl
 import json
 import logging
+import resource
 from logging.handlers import RotatingFileHandler
 import sys
 import time
@@ -183,7 +184,9 @@ async def collect(engine: Engine, once: bool, cycles: int | None = None) -> int:
                 summary = {**engine.summary(), "cycle": completed_cycles, "cycle_quotes": successes,
                            "cycle_errors": failures, "cycle_onchain_errors": risk_failures,
                            "rpc_totals": dict(solana.stats), "pool_discovery": discovery_status,
-                           "cycle_elapsed_seconds": round(elapsed, 3), "cycle_deferred": max(0, deferred)}
+                           "cycle_elapsed_seconds": round(elapsed, 3), "cycle_deferred": max(0, deferred),
+                           # Peak resident memory of this worker process (Linux: KiB).
+                           "rss_peak_kb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
                 if schedule:
                     summary['observation_schedule'] = schedule.status(utcnow().timestamp())
                     summary['rpc_request_budget'] = budget.status()

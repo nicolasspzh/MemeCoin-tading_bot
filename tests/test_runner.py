@@ -1,3 +1,4 @@
+import json
 import pytest
 
 import main
@@ -184,7 +185,7 @@ async def test_long_observation_gap_is_recorded(tmp_path, monkeypatch, quote):
         db.close()
 
 
-async def test_one_failed_candidate_list_keeps_others_and_marks_run_degraded(engine, monkeypatch):
+async def test_one_failed_candidate_list_keeps_others_and_marks_run_degraded(engine, monkeypatch, capsys):
     engine.settings.pool_discovery_enabled = False
     engine.settings.discovery_feeds = ["token-profiles", "token-boosts"]
     class PartialDex:
@@ -198,3 +199,5 @@ async def test_one_failed_candidate_list_keeps_others_and_marks_run_degraded(eng
     monkeypatch.setattr(main, "DexScreener", PartialDex)
     assert await main.collect(engine, once=True) == 2
     assert engine.db.conn.execute("SELECT source FROM tokens WHERE token='BOOSTED'").fetchone()[0] == "dexscreener-boost"
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["rss_peak_kb"] > 0  # worker memory is reported to the supervisor

@@ -60,7 +60,8 @@ def probe_report(directory, now=None):
               "hours_observed": round(hours, 2), "admission_prefilter": settings.admission_prefilter,
               "slots": settings.max_watch_tokens, "admission_interval_seconds": settings.observation_admission_seconds,
               "state": {k: state.get(k) for k in ("status", "stopped_at", "completed_cycles", "worker_launches", "rpc_requests",
-                                                   "rpc_successes", "data_degraded", "backup_error_type")}}
+                                                   "rpc_successes", "data_degraded", "backup_error_type",
+                                                   "worker_rss_peak_kb", "supervisor_rss_peak_kb")}}
     path = directory / "observations.sqlite3"
     if not path.exists():
         result["database"] = None
@@ -149,6 +150,8 @@ def german(result):
               f"Beobachtungen: {o['total']}; bestehen alle Einstiegsprüfungen: {o['entry_check_pass_rows']} "
               f"Zeilen von {o['entry_check_pass_tokens']} Coins",
               f"Orders/Ausführungen: {result['orders']}/{result['fills']} (müssen 0 sein)",
+              f"Speicher-Höchstwert Sammler/Aufseher: {result['state'].get('worker_rss_peak_kb')} / "
+              f"{result['state'].get('supervisor_rss_peak_kb')} KiB",
               "Bitte die ganze Ausgabe inklusive JSON zurückschicken."]
     return "\n".join(lines) + "\n"
 

@@ -9,6 +9,7 @@ import fcntl
 import hashlib
 import json
 import logging
+import resource
 from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
@@ -289,6 +290,7 @@ def supervise(directory, lock_fd):
                     state["completed_cycles"] += 1
                     state["last_cycle_at"] = utcnow().isoformat()
                     state["last_cycle"] = {key: summary[key] for key in ("cycle_quotes", "cycle_errors", "cycle_onchain_errors", "cycle_elapsed_seconds", "cycle_deferred")}
+                    state["worker_rss_peak_kb"] = max(state.get("worker_rss_peak_kb", 0), summary.get("rss_peak_kb", 0))
                     state["data_degraded"] = bool(not summary["cycle_quotes"] or summary["cycle_errors"] or summary["cycle_onchain_errors"] or summary.get("pool_discovery", {}).get("errors"))
                     last_progress = time.monotonic()
                     worker_cycles += 1
@@ -311,6 +313,7 @@ def supervise(directory, lock_fd):
                 elif time.monotonic() - last_progress > manifest["stall_seconds"]: reason = "worker_stalled"
                 if time.monotonic() - last_state >= 5 or reason:
                     state["heartbeat_at"] = utcnow().isoformat()
+                    state["supervisor_rss_peak_kb"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
                     atomic_json(directory / "state.json", state)
                     last_state = time.monotonic()
                 if reason:

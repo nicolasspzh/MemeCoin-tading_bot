@@ -19,7 +19,9 @@ R2_COLLECTION = {
     'rpc_daily_request_limit': 70000, 'rpc_total_request_limit': 600000,
     'rpc_cache_seconds': 60, 'watch_tokens': []}
 # Stage D probe: R2 slots and admission pace, with the admission prefilter switched on.
-PROFILES = {'r2': R2_COLLECTION, 'r3-probe': {**R2_COLLECTION, 'admission_prefilter': True}}
+R3_COLLECTION = {**R2_COLLECTION, 'admission_prefilter': True}
+# The R3 test collects exactly like the stage D probes that passed.
+PROFILES = {'r2': R2_COLLECTION, 'r3-probe': R3_COLLECTION, 'r3': R3_COLLECTION}
 
 
 def collection_settings(profile='r2'):

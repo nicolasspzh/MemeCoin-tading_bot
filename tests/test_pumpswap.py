@@ -238,3 +238,29 @@ def test_adverse_move_limit_is_three_percent(quote):
     assert run("0.98").status == "filled"        # +2.0 % since the signal
     late = run("0.96")                            # +4.2 % since the signal
     assert late.status == "failed" and late.reason == "price_moved_beyond_limit"
+
+
+def test_exits_allow_ten_percent_and_stress_adds_a_sandwich_surcharge(quote):
+    from backtesting.evaluation import scenario_definitions
+    from data.models import Wallet
+    from trading.execution import Execution, attempt
+    from trading.paper_wallet import buy
+    s = quote()
+    wallet = Wallet()
+    buy(wallet, s, 1, s.received_at, Settings(), budget_usd=Decimal("2"))
+    order = {"id": 2, "token": s.token, "action": "SELL", "budget_usd": "0", "signal_at": s.received_at.isoformat(),
+             "signal_snapshot_id": 1}
+    sell = lambda signal: attempt(wallet, {**order, "signal_price_usd": signal}, s, 2, s.received_at, Settings(),
+                                  Execution(failure_probability=0), Decimal(1))
+    assert Execution().max_adverse_sell_bps == Settings().paper_max_adverse_sell_bps == Decimal(1000)
+    assert sell("1.05").status == "filled"        # price fell 4.8 % since the exit signal
+    late = sell("1.12")                            # price fell 10.7 %
+    assert late.status == "failed" and late.reason == "price_moved_beyond_limit"
+    stress = Execution.model_validate(scenario_definitions(Settings())["stress"]["execution"])
+    assert stress.max_adverse_sell_bps == 500 and stress.sandwich_buy_bps == 50
+    entry = {"id": 3, "token": s.token, "action": "BUY", "budget_usd": "2", "signal_price_usd": "1",
+             "signal_at": s.received_at.isoformat(), "signal_snapshot_id": 1}
+    plain = attempt(Wallet(), entry, s, 2, s.received_at, Settings(), Execution(failure_probability=0), Decimal(1))
+    hit = attempt(Wallet(), entry, s, 2, s.received_at, Settings(),
+                  Execution(failure_probability=0, sandwich_buy_bps=Decimal(50)), Decimal(1))
+    assert hit.fill.price - plain.fill.price == s.price_usd * Decimal(50) / 10000  # 0.5 % more per buy

@@ -176,3 +176,36 @@ def test_diagnostic_is_reproducible_and_never_overwrites(tmp_path, quote):
     assert len(one['scenarios']['baseline']) == len(one['scenarios']['stress']) == 3
     with pytest.raises(FileExistsError):
         diagnostic([source], tmp_path / 'one', Settings(), allow_demo=True)
+
+
+def reference(**changes):
+    return {"name": "r2-final", "sha256": "c" * 64, "rows": 10, "location": "PC und NAS",
+            "first_utc": "2026-10-09T00:00:00+00:00", "last_utc": "2026-10-16T01:06:00+00:00", **changes}
+
+
+def test_reference_protocol_binds_external_evidence_and_future_window(tmp_path):
+    from backtesting.evaluation import prepare_references
+    now = datetime(2026, 10, 20, 19, 0, tzinfo=UTC)
+    refs = [reference(), reference(name="probe-d3", last_utc="2026-10-20T18:13:54+00:00")]
+    envelope = prepare_references(refs, tmp_path / "plan", Settings(), start="2026-10-21T00:00:00+00:00", now=now)
+    plan = envelope["plan"]
+    assert plan["version"] == 2 and plan["development_end_utc"] == "2026-10-20T18:13:54+00:00"
+    assert plan["test_end_exclusive_utc"] == "2026-10-28T00:00:00+00:00"
+    assert load_protocol(tmp_path / "plan" / "protocol.json")["sha256"] == envelope["sha256"]
+    assert not (tmp_path / "plan" / "development.sqlite3").exists()
+    early = evaluate(tmp_path / "plan" / "protocol.json", [tmp_path / "absent.sqlite3"], tmp_path / "early",
+                     now=datetime(2026, 10, 27, tzinfo=UTC))
+    assert early["status"] == "WAITING_FOR_WINDOW_END"
+
+
+@pytest.mark.parametrize("refs,start,match", [
+    ([reference(last_utc="2026-10-20T23:30:00+00:00")], "2026-10-21T00:00:00+00:00", "future"),
+    ([reference()], "2026-10-20T19:30:00+00:00", "embargo"),
+    ([reference(sha256="xyz")], "2026-10-21T00:00:00+00:00", "SHA-256"),
+    ([], "2026-10-21T00:00:00+00:00", "At least one"),
+])
+def test_reference_protocol_rejects_unsafe_plans(tmp_path, refs, start, match):
+    from backtesting.evaluation import prepare_references
+    with pytest.raises(ValueError, match=match):
+        prepare_references(refs, tmp_path / "plan", Settings(), start=start, now=datetime(2026, 10, 20, 19, 0, tzinfo=UTC))
+    assert not (tmp_path / "plan").exists()

@@ -23,6 +23,8 @@ class Execution(BaseModel):
     priority_fee_usd: D = Field(default=D("0.005"), ge=0)
     failure_probability: float = Field(default=0.02, ge=0, le=1)
     max_adverse_move_bps: D = Field(default=D("300"), ge=0, le=10000)
+    max_adverse_sell_bps: D = Field(default=D("1000"), ge=0, le=10000)
+    sandwich_buy_bps: D = Field(default=D("0"), ge=0, le=1000)
     seed: int = 7
 
     @classmethod
@@ -100,8 +102,9 @@ def attempt(wallet: Wallet, order: dict, snapshot: Snapshot, sid: int, now: date
     # The measured pool fee replaces the fixed assumption. An unknown fee is priced
     # at the limit; such a fill is rejected below by its risk blockers anyway.
     fee = pool_fee_bps(snapshot, settings)
+    sandwich = execution.sandwich_buy_bps if side == "BUY" else D(0)
     fill_settings = valuation_settings(settings, execution).model_copy(
-        update={"slippage_bps": settings.slippage_bps + impact,
+        update={"slippage_bps": settings.slippage_bps + impact + sandwich,
                 "fee_bps": settings.max_pool_fee_bps if fee is None else fee})
     try:
         if side == "SELL" and snapshot.token not in candidate.positions:
@@ -118,7 +121,8 @@ def attempt(wallet: Wallet, order: dict, snapshot: Snapshot, sid: int, now: date
     signal_price = D(order["signal_price_usd"])
     adverse = ((snapshot.price_usd / signal_price - 1) if side == "BUY"
                else (1 - snapshot.price_usd / signal_price)) * 10000
-    failure = ("price_moved_beyond_limit" if adverse > execution.max_adverse_move_bps else
+    limit = execution.max_adverse_move_bps if side == "BUY" else execution.max_adverse_sell_bps
+    failure = ("price_moved_beyond_limit" if adverse > limit else
                "simulated_transaction_failure" if draw < D(str(execution.failure_probability)) else None)
     if failure:
         failed = wallet.model_copy(deep=True)
