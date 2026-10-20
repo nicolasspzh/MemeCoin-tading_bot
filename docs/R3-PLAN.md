@@ -294,6 +294,10 @@ erlaubte Kursbewegung beim Verkauf, Wartungstermine des VPS-Anbieters.
 [`R3-PROTOKOLL.md`](R3-PROTOKOLL.md). Testfenster 21.10. bis 28.10.2026
 (00:00 UTC). Installation: [`R3-TEST-ANLEITUNG.md`](R3-TEST-ANLEITUNG.md).
 
+**Stufe F läuft.** Der R3-Test ist seit 20.10.2026, 22:01 Uhr Schweizer Zeit
+auf dem VPS installiert und aktiv (Paket `d6192bc6…`, 397 Tests auf dem VPS
+bestanden, Protokoll- und Release-Prüfung bestanden, Dienst eingeschaltet).
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |

@@ -134,6 +134,9 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
    vollständige Prüfung). Als Nächstes: Probelauf des Sammlers mit Vorfilter
    (Stufe D, Anleitung in [R3-STUFE-D-ANLEITUNG.md](R3-STUFE-D-ANLEITUNG.md)),
    dann ein neues Protokoll mit zukünftigem Testfenster festlegen.
+   Stand 20.10.: Stufe D mit D3 bestanden, Protokoll eingefroren
+   ([R3-PROTOKOLL.md](R3-PROTOKOLL.md)), R3-Test seit 20.10. 22:01 Uhr auf
+   dem VPS aktiv. Testfenster 21.10. bis 28.10. (02:00 Uhr Schweizer Zeit).
 5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
    entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
 
