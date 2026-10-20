@@ -280,6 +280,16 @@ bestanden, rund 4,7 geeignete Coins pro Stunde am Tag. Dritter Lauf,
 neustartfest und mit Ausfallerkennung im Bericht:
 [`R3-STUFE-D3-ANLEITUNG.md`](R3-STUFE-D3-ANLEITUNG.md).
 
+**Stufe D bestanden mit D3 (20.10.).** 24 Stunden ohne Ausfall, alle
+Grenzen eingehalten: 84,7 % der Aufnahmeabstände höchstens 900 Sekunden,
+5,3 geeignete Coins pro Stunde, 1'266 RPC-Anfragen pro Stunde, 0,6 %
+Datenfehler. Details: [`R3-STUFE-D3-ERGEBNIS.md`](R3-STUFE-D3-ERGEBNIS.md).
+
+Vor Stufe E zu klären: Speicherbedarf (Höchstwert an der Grenze von 384 MB,
+dazu Auslagerung), Gründe der `resolve_error` der Raydium-Suche,
+Helius-Credits für 7 oder 14 Tage, Sandwich-Aufschlag im Stress-Szenario,
+erlaubte Kursbewegung beim Verkauf, Wartungstermine des VPS-Anbieters.
+
 ## Ablauf und Erfolgsbedingungen
 
 | Stufe | Inhalt | Weiter, wenn |

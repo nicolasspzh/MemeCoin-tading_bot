@@ -1,0 +1,95 @@
+{
+ "admission_interval_seconds": 720,
+ "admission_prefilter": true,
+ "admissions": {
+  "by_utc_hour": {"00": 5, "01": 5, "02": 4, "03": 5, "04": 3, "05": 3, "06": 5, "07": 2, "08": 5, "09": 5, "10": 3, "11": 5,
+                  "12": 2, "13": 3, "14": 4, "15": 5, "16": 5, "17": 1, "18": 4, "19": 5, "20": 5, "21": 5, "22": 5, "23": 5},
+  "first": "2026-10-19T18:13:58.724148+00:00",
+  "gap_seconds_max": 2557,
+  "gap_seconds_median": 727,
+  "gaps": 98,
+  "gaps_interrupted_by_outage": 0,
+  "gaps_over_900_seconds": 15,
+  "last": "2026-10-20T17:04:23.237428+00:00",
+  "total": 99
+ },
+ "created_at": "2026-10-19T18:13:55.695190+00:00",
+ "discovered": {
+  "by_source": {"dexscreener-profile": 520, "raydium-cpmm-finalized": 108},
+  "by_utc_hour": {"00": 30, "01": 28, "02": 26, "03": 14, "04": 20, "05": 19, "06": 10, "07": 20, "08": 12, "09": 14, "10": 19,
+                  "11": 17, "12": 21, "13": 21, "14": 25, "15": 25, "16": 37, "17": 33, "18": 65, "19": 43, "20": 38, "21": 29,
+                  "22": 28, "23": 34},
+  "per_hour": 26.2,
+  "total": 628
+ },
+ "fills": 0,
+ "health": {
+  "raydium-cpmm-finalized:bootstrap_boundary": 1,
+  "raydium-cpmm-finalized:resolve_error": 437,
+  "raydium-cpmm-finalized:signature_page": 725,
+  "raydium-cpmm-finalized:started": 49,
+  "raydium-cpmm-finalized:stopped": 49,
+  "scheduler:capacity_deferred": 4346
+ },
+ "hours_active": 24.0,
+ "hours_observed": 24.0,
+ "observations": {
+  "entry_check_pass_rows": 2402,
+  "entry_check_pass_tokens": 40,
+  "holder_status": {"complete": 28195, "none": 375},
+  "priced": 28570,
+  "top_blockers": {
+   "coarse_holder_sample": 12850,
+   "followup_only_no_new_entry": 19690,
+   "high_creator_observed_balance": 464,
+   "high_top10_owner_concentration": 7644,
+   "insufficient_onchain_liquidity": 12409,
+   "insufficient_or_unknown_liquidity": 11153,
+   "insufficient_or_unknown_volume": 12366,
+   "insufficient_verified_lp_nonredeemable_fraction": 1175,
+   "missing_verified_holder_risk": 375,
+   "pool_fee_above_limit": 290,
+   "pumpswap_boost_window": 492,
+   "unsupported_extension:transferFeeConfig": 211
+  },
+  "total": 28570,
+  "with_data_errors": 164
+ },
+ "orders": 0,
+ "outages": [],
+ "profile": "r3-probe",
+ "rpc_request_budget": {"2026-10-19": 7742, "2026-10-20": 22651},
+ "rpc_requests_per_hour": 1266,
+ "screens": {
+  "eligible": 221,
+  "eligible_pool_kinds": {"pumpswap": 203, "raydium/CPMM": 18},
+  "eligible_tokens_by_utc_hour": {"00": 4, "01": 5, "02": 5, "03": 5, "04": 4, "05": 2, "06": 5, "07": 2, "08": 6, "09": 7,
+                                  "10": 1, "11": 7, "12": 2, "13": 4, "14": 4, "15": 7, "16": 6, "17": 2, "18": 7, "19": 7,
+                                  "20": 6, "21": 8, "22": 11, "23": 9},
+  "eligible_tokens_per_hour": 5.3,
+  "rejection_reasons": {
+   "insufficient_or_unknown_liquidity": 2548,
+   "missing_price": 231,
+   "no_dex_pair": 34,
+   "pool_older_than_entry_window": 84,
+   "unknown_pair_age": 18,
+   "unsupported_dex_pool": 1713,
+   "unsupported_quote_mint": 823
+  },
+  "tokens_eligible": 126,
+  "tokens_screened": 580,
+  "total": 2964
+ },
+ "slots": 8,
+ "state": {
+  "backup_error_type": null,
+  "completed_cycles": 4346,
+  "data_degraded": true,
+  "rpc_requests": 30393,
+  "rpc_successes": 30377,
+  "status": "completed_scheduled_window",
+  "stopped_at": "2026-10-20T18:13:54.162069+00:00",
+  "worker_launches": 49
+ },
+ "until": "2026-10-20T18:13:54+00:00"
+}
