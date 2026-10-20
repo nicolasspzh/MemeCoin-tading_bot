@@ -62,7 +62,11 @@ cd "$stage_dir"
 rm -rf -- "$stage_dir/.install-tests"
 # Frozen protocol, code fingerprint, future window and unit deadline must all agree.
 "$stage_dir/.venv/bin/python" -m deploy.release_check
-systemd-analyze verify "$stage_dir/deploy/$unit_name"
+# Verify the unit against the staged copy: its final paths do not exist yet.
+mkdir "$stage_dir/.verify"
+sed "s|$app_dir|$stage_dir|g" "$stage_dir/deploy/$unit_name" > "$stage_dir/.verify/$unit_name"
+systemd-analyze verify "$stage_dir/.verify/$unit_name"
+rm -rf -- "$stage_dir/.verify"
 cd /opt
 mv -- "$stage_dir" "$app_dir"
 stage_dir=""

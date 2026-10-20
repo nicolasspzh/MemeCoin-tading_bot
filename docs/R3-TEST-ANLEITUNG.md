@@ -7,6 +7,16 @@ also vor dem **21.10. um 02:00 Uhr Schweizer Zeit**. Danach verweigert die
 Prüfung im Installationsskript den Start, und es braucht ein neues
 Protokoll.
 
+## Korrektur am 20.10. abends
+
+Der erste Installationsversuch brach ab: Das Skript prüfte die Dienstdatei,
+bevor der Code an seinem endgültigen Ort lag (`Command ... is not
+executable`). Es wurde nichts installiert. Das Skript prüft die
+Dienstdatei jetzt gegen die Zwischenkopie. Meine Simulation hatte das
+nicht bemerkt, weil systemd dort nur ein Platzhalter war; der Platzhalter
+prüft jetzt, ob das Programm existiert, und zeigt mit dem alten Skript
+genau den Fehler vom VPS. Protokoll und Code-Fingerprint sind unverändert.
+
 ## Was ich vorher geprüft habe
 
 - 397 Tests bestehen.
@@ -46,7 +56,7 @@ scp "$HOME\Downloads\memecoin-r3-test.tar.gz" root@159.195.4.228:/root/
 sha256sum /root/memecoin-r3-test.tar.gz
 ```
 
-Erwartet: `94dc986d6b3fd0496d4e7d3f40842dc7de74b6b985512deb3e9ba00c5ea63654`.
+Erwartet: `d6192bc624f45efab80954baa4a735efb34d74afbb81939f2a10cb08d5f29435`.
 Weicht sie ab, hier aufhören.
 
 ```bash
