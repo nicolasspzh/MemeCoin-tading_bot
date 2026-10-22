@@ -19,6 +19,9 @@ Anlass: Der Betreiber vermutete einen Absturz. Befund: kein Absturz.
   weichen Grenze von 1 GB. Sammler und Aufseher selbst haben aber je
   höchstens rund 60 MB belegt (`state.json`). Folgerung: Der Rest ist sehr
   wahrscheinlich Datei-Zwischenspeicher der Datenbank und der stündlichen
-  Sicherungen, den Linux bei Bedarf freigibt. Belegt ist das erst mit der
-  Aufteilung aus `memory.stat`. Die Runden laufen weiter im 20-Sekunden-Takt,
-  eine Bremsung ist nicht zu sehen.
+  Sicherungen, den Linux bei Bedarf freigibt. Die Runden laufen weiter im
+  20-Sekunden-Takt, eine Bremsung ist nicht zu sehen.
+- Nachgeprüft mit `memory.stat` (gleicher Abend): `anon` 74,6 MB (Speicher
+  der Programme), `file` 977,1 MB (Datei-Zwischenspeicher), `shmem` 0.
+  Damit ist belegt: Fast alles ist Zwischenspeicher, die Programme selbst
+  brauchen rund 75 MB. Kein Handlungsbedarf.
