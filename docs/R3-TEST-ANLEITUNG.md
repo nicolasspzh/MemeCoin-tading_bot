@@ -81,8 +81,9 @@ Datenabdeckung, keine Ergebnisse.
 
 ### 7. Nach dem 28.10. um 02:06 Uhr Schweizer Zeit (Winterzeit)
 
-Dann ist auch die Nachbeobachtung vorbei. Ich schreibe dafür eine eigene
-Anleitung: Datenbank sichern, kopieren und auswerten, wie bei R2.
+Dann ist auch die Nachbeobachtung vorbei. Weiter mit
+[NACH-R3-ENDE.md](NACH-R3-ENDE.md): Datenbank sichern, kopieren und
+auswerten, wie bei R2.
 
 ## Was nicht zu tun ist
 
