@@ -8,8 +8,9 @@ Erstellt mit `scripts/prepare_r3_protocol.py`.
 ## Testfenster
 
 - Start: 21.10.2026, 00:00 UTC (02:00 Uhr Schweizer Zeit)
-- Ende: 28.10.2026, 00:00 UTC (02:00 Uhr Schweizer Zeit), 7 Tage
-- Sammelende mit Nachbeobachtung: 28.10.2026, 01:06 UTC
+- Ende: 28.10.2026, 00:00 UTC (01:00 Uhr Schweizer Zeit; am 25.10. gilt
+  wieder Winterzeit), 7 Tage
+- Sammelende mit Nachbeobachtung: 28.10.2026, 01:06 UTC (02:06 Uhr Schweizer Zeit)
 - Der Sammler startet schon bei der Installation. Beobachtungen vor dem
   Start zählen nicht (Vorlauf).
 

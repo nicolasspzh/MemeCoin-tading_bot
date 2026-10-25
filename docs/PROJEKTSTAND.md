@@ -136,7 +136,8 @@ und Auswertung (Ergebnis in [R2-ERGEBNIS.md](R2-ERGEBNIS.md)).
    dann ein neues Protokoll mit zukünftigem Testfenster festlegen.
    Stand 20.10.: Stufe D mit D3 bestanden, Protokoll eingefroren
    ([R3-PROTOKOLL.md](R3-PROTOKOLL.md)), R3-Test seit 20.10. 22:01 Uhr auf
-   dem VPS aktiv. Testfenster 21.10. bis 28.10. (02:00 Uhr Schweizer Zeit).
+   dem VPS aktiv. Testfenster 21.10. 02:00 Uhr bis 28.10. 01:00 Uhr Schweizer
+   Zeit (00:00 bis 00:00 UTC; am 25.10. Umstellung auf Winterzeit).
 5. Erst danach über einen begrenzten Paper-Betrieb mit echten Marktdaten
    entscheiden. Anti-FOMO und Risikogrösse getrennt integrieren und testen.
 

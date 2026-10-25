@@ -79,7 +79,7 @@ cd /opt/memecoin-collector-r3 && .venv/bin/python -m deploy.status --directory /
 Derselbe Statusbefehl wie in Schritt 5. Er zeigt nur Technik und
 Datenabdeckung, keine Ergebnisse.
 
-### 7. Nach dem 28.10. um 03:06 Uhr Schweizer Zeit
+### 7. Nach dem 28.10. um 02:06 Uhr Schweizer Zeit (Winterzeit)
 
 Dann ist auch die Nachbeobachtung vorbei. Ich schreibe dafür eine eigene
 Anleitung: Datenbank sichern, kopieren und auswerten, wie bei R2.
