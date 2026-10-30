@@ -1,0 +1,175 @@
+{
+ "kind": "PROSPECTIVE_WINDOW_EVALUATION",
+ "generated_at_utc": "2026-10-30T19:11:25.644166+00:00",
+ "protocol_sha256": "6175b5577d9216c1870810dafdbc96bbc8399fec578fccb47525c23dc3b84c84",
+ "code_sha256": "2e8b8c2bd50a2de684c3c3bdfadfb9f44863d62905ff2b4f1d42860ae7532373",
+ "input_db_sha256": "239fa1b31bfadc150034d66cf0c4231fac78b3d2890bb9fd90a85724f0952d1a",
+ "result_json_sha256": "78120515aeffb8221baa55389dc64cc6a8bb3b1e069523f56200f932e0fb01e8",
+ "frozen_snapshots_sha256": "f5b1d2da8b44e230faa8d20bb6bb605f7edf4a54f57b28724d216c5b47f4d913",
+ "excluded_rows": {
+  "before_window": 4720,
+  "after_window": 930
+ },
+ "data_quality": {
+  "observations": 180840,
+  "active_5min_fraction": 0.9950396825396826,
+  "priced_fraction": 1.0,
+  "modern_risk_fraction": 1.0,
+  "long_same_pool_gap_fraction": 0.0006437220452603189,
+  "entry_risk_pass_rows": 19012,
+  "blockers": [],
+  "readiness": true
+ },
+ "assessment": {
+  "status": "REVIEWABLE_HOLDOUT",
+  "blockers": [],
+  "eligible_for_review": true,
+  "positive_net_realized_pnl_in_every_scenario": false,
+  "live_trading_approved": false
+ },
+ "scenarios": {
+  "baseline": [
+   {
+    "seed": 7,
+    "completed_trades": 347,
+    "distinct_closed_trade_tokens": 86,
+    "successful_fills": 694,
+    "orders": 728,
+    "order_status_counts": {
+     "filled": 694,
+     "failed": 26,
+     "rejected": 8
+    },
+    "net_realized_pnl_usd": "-39.65945636609219917985429159",
+    "total_equity_mark_usd": "10.34054363390780082014570826",
+    "win_rate_pct": "26.80115273775216138328530259",
+    "profit_factor_closed_trades": "0.4083541066406663871518549366",
+    "successful_fees_usd": "25.80694187737466517849759870",
+    "failed_fees_usd": "0.650",
+    "priority_fees_included_usd": "3.600",
+    "slippage_and_impact_usd": "8.079558381969959654364636917",
+    "max_sampled_drawdown_pct": "79.35781260854153637443858902",
+    "status": "DEAD",
+    "open_positions": []
+   },
+   {
+    "seed": 17,
+    "completed_trades": 349,
+    "distinct_closed_trade_tokens": 87,
+    "successful_fills": 698,
+    "orders": 735,
+    "order_status_counts": {
+     "filled": 698,
+     "failed": 29,
+     "rejected": 8
+    },
+    "net_realized_pnl_usd": "-39.76574156217366116864789706",
+    "total_equity_mark_usd": "10.23425843782633883135210284",
+    "win_rate_pct": "26.64756446991404011461318052",
+    "profit_factor_closed_trades": "0.4029243905803063106822784297",
+    "successful_fees_usd": "26.05674869668594015866548373",
+    "failed_fees_usd": "0.725",
+    "priority_fees_included_usd": "3.635",
+    "slippage_and_impact_usd": "8.197259993247607266321908540",
+    "max_sampled_drawdown_pct": "79.56998316863251728561587189",
+    "status": "DEAD",
+    "open_positions": []
+   },
+   {
+    "seed": 29,
+    "completed_trades": 358,
+    "distinct_closed_trade_tokens": 89,
+    "successful_fills": 716,
+    "orders": 747,
+    "order_status_counts": {
+     "filled": 716,
+     "failed": 23,
+     "rejected": 8
+    },
+    "net_realized_pnl_usd": "-39.42594649368071368024563356",
+    "total_equity_mark_usd": "10.57405350631928631975436636",
+    "win_rate_pct": "27.09497206703910614525139665",
+    "profit_factor_closed_trades": "0.4165934541622162281468808123",
+    "successful_fees_usd": "26.54091513667842073200744920",
+    "failed_fees_usd": "0.575",
+    "priority_fees_included_usd": "3.695",
+    "slippage_and_impact_usd": "8.241347315862118569410264642",
+    "max_sampled_drawdown_pct": "78.90381247977821448489458063",
+    "status": "DEAD",
+    "open_positions": []
+   }
+  ],
+  "stress": [
+   {
+    "seed": 7,
+    "completed_trades": 190,
+    "distinct_closed_trade_tokens": 50,
+    "successful_fills": 380,
+    "orders": 440,
+    "order_status_counts": {
+     "filled": 380,
+     "failed": 59,
+     "rejected": 1
+    },
+    "net_realized_pnl_usd": "-43.53788184765889022521880746",
+    "total_equity_mark_usd": "6.462118152341109774781192550",
+    "win_rate_pct": "19.47368421052631578947368421",
+    "profit_factor_closed_trades": "0.1604125041684432004555888358",
+    "successful_fees_usd": "27.16455162581063038083723344",
+    "failed_fees_usd": "3.54",
+    "priority_fees_included_usd": "8.78",
+    "slippage_and_impact_usd": "13.56989991338678160316373934",
+    "max_sampled_drawdown_pct": "87.15900314191932761009505518",
+    "status": "DEAD",
+    "open_positions": []
+   },
+   {
+    "seed": 17,
+    "completed_trades": 175,
+    "distinct_closed_trade_tokens": 45,
+    "successful_fills": 350,
+    "orders": 409,
+    "order_status_counts": {
+     "failed": 58,
+     "filled": 350,
+     "rejected": 1
+    },
+    "net_realized_pnl_usd": "-43.77948644996303327876926788",
+    "total_equity_mark_usd": "6.220513550036966721230732057",
+    "win_rate_pct": "17.71428571428571428571428571",
+    "profit_factor_closed_trades": "0.1326148302680191420792725332",
+    "successful_fees_usd": "24.95266586419738103265018918",
+    "failed_fees_usd": "3.48",
+    "priority_fees_included_usd": "8.16",
+    "slippage_and_impact_usd": "12.33890787440277493304241676",
+    "max_sampled_drawdown_pct": "87.55897289992606655753853588",
+    "status": "DEAD",
+    "open_positions": []
+   },
+   {
+    "seed": 29,
+    "completed_trades": 181,
+    "distinct_closed_trade_tokens": 46,
+    "successful_fills": 362,
+    "orders": 411,
+    "order_status_counts": {
+     "failed": 48,
+     "filled": 362,
+     "rejected": 1
+    },
+    "net_realized_pnl_usd": "-43.71380677827068710543630369",
+    "total_equity_mark_usd": "6.286193221729312894563696418",
+    "win_rate_pct": "17.12707182320441988950276243",
+    "profit_factor_closed_trades": "0.1432076730658023695931793888",
+    "successful_fees_usd": "25.69942900838107089342517312",
+    "failed_fees_usd": "2.88",
+    "priority_fees_included_usd": "8.20",
+    "slippage_and_impact_usd": "12.43492615177377690746866976",
+    "max_sampled_drawdown_pct": "87.44360510408132460284087700",
+    "status": "DEAD",
+    "open_positions": []
+   }
+  ]
+ },
+ "note": "Zusammenfassung ohne Rohdaten. Erzeugt mit scripts/evaluate_low_memory.py (gleiche eingefrorene Funktionen wie evaluate)."
+}

@@ -317,3 +317,7 @@ In Stufe C gilt: Es wird gezählt, wie viele Einstiege möglich werden und
 woran die übrigen scheitern. Gewinn oder Verlust auf R2 sind kein Kriterium.
 Selbst wenn die Diagnose Gewinne zeigt, beweist das nichts, weil diese Daten
 beim Entwurf bekannt waren.
+
+**Stufe F abgeschlossen (30.10.).** `REVIEWABLE_HOLDOUT`: auswertbar, aber
+Verlust in allen sechs Läufen (baseline rund −39,5 USD, stress rund
+−43,7 USD von 50 USD). Details: [`R3-ERGEBNIS.md`](R3-ERGEBNIS.md).

@@ -68,6 +68,7 @@ keine Trades und berechnet keine Rendite.
 | Plan für die nächste Version | [R3-Plan](docs/R3-PLAN.md) |
 | R3-Test: Protokoll und Installation | [Protokoll](docs/R3-PROTOKOLL.md), [Anleitung](docs/R3-TEST-ANLEITUNG.md), [Status](docs/R3-TEST-STATUS.md) |
 | Nach dem R3-Ende: Sicherung und Auswertung | [Nach R3](docs/NACH-R3-ENDE.md) |
+| Ergebnis von R3 | [R3-Ergebnis](docs/R3-ERGEBNIS.md) |
 | R3-Diagnose auf den R2-Daten | [Stufe C](docs/R3-STUFE-C-DIAGNOSE.md) |
 | R3-Probelauf auf dem VPS | [Anleitung](docs/R3-STUFE-D-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D-ERGEBNIS.md), [zweiter Lauf](docs/R3-STUFE-D2-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D2-ERGEBNIS.md), [dritter Lauf](docs/R3-STUFE-D3-ANLEITUNG.md), [Ergebnis](docs/R3-STUFE-D3-ERGEBNIS.md) |
 | Nach dem R2-Ende: Sicherung und Auswertung | [Nach R2](docs/NACH-R2-ENDE.md) |
